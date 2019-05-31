@@ -14,7 +14,8 @@ namespace Daiwa
         public int _numRows;
         public int _numCols;
         public int[,] _data;
-        public List<Rack> _rackList;
+        public List<Rack> _generalRackList;
+        public List<Rack> _hangerRackList;
         public List<Robot> _robotList;
         Hashtable _htItems;
         Hashtable _htMaxStorage;
@@ -26,7 +27,8 @@ namespace Daiwa
             _data = null;
             _htItems = new Hashtable();
             _htMaxStorage = new Hashtable();
-            _rackList = new List<Rack>();
+            _generalRackList = new List<Rack>();
+            _hangerRackList = new List<Rack>();
             _robotList = new List<Robot>();
         }
 
@@ -65,7 +67,6 @@ namespace Daiwa
                 }
             }
 
-            Console.WriteLine("LoadMap--end");
         }
 
         public void CreateObject(int row, int column, int celldata)
@@ -75,21 +76,21 @@ namespace Daiwa
                 case 10: //General-purpose rack (upward/downward directions)
                     for (int height = 1; height <= 5; height++)
                     {
-                        _rackList.Add(new GeneralPurposeRack(row, column, height, Direction.Up));
-                        _rackList.Add(new GeneralPurposeRack(row, column, height, Direction.Down));
+                        _generalRackList.Add(new GeneralPurposeRack(row, column, height, Direction.Up));
+                        _generalRackList.Add(new GeneralPurposeRack(row, column, height, Direction.Down));
                     }
                     break;
 
                 case 11: //General-purpose rack (leftward/rightward directions)
                     for (int height = 1; height <= 5; height++)
                     {
-                        _rackList.Add(new GeneralPurposeRack(row, column, height, Direction.Left));
-                        _rackList.Add(new GeneralPurposeRack(row, column, height, Direction.Right));
+                        _generalRackList.Add(new GeneralPurposeRack(row, column, height, Direction.Left));
+                        _generalRackList.Add(new GeneralPurposeRack(row, column, height, Direction.Right));
                     }
                     break;
 
                 case 12: //Hanger rack (leftward/rightward directions)
-                    _rackList.Add(new HangerRack(row, column));
+                    _hangerRackList.Add(new HangerRack(row, column));
                     break;
 
                 case 20: //Receiving point
@@ -147,7 +148,7 @@ namespace Daiwa
             string output = "store";
             for (int i = 1; i < input.Count; i += 2)
             {
-                Debug.WriteLine(i / 2);
+                //Debug.WriteLine(i / 2);
 
                 string product_id = input[i];
                 int quantity = int.Parse(input[i + 1]);
@@ -166,8 +167,8 @@ namespace Daiwa
                     continue;
                 }
 
-                // vinh: revise here
-                Rack empty_rack = _rackList.FirstOrDefault(rack => rack._storageType.Equals(product_info._storageType) && rack._num_items == 0);
+                Rack empty_rack = FindEmptyRack(product_info, quantity);
+
                 if (empty_rack != null)
                 {
                     empty_rack._productType = product_info._productType;
@@ -175,7 +176,11 @@ namespace Daiwa
                     empty_rack._num_items = quantity;
                     empty_rack.SetMaxStorage(max_storage);
                     empty_rack._itemList.Add(new RackItem(product_id, quantity));
-                    output = output + " " + product_id + " " + empty_rack.GetRackPosition() + " " + quantity;
+
+                    string store_product_command = " " + product_id + " " + empty_rack.GetRackPosition();
+                    for (int j = 0; j < quantity; j++)
+                        output = output + store_product_command;
+
                 }
                 else
                 {
@@ -186,14 +191,40 @@ namespace Daiwa
             return output;
         }
 
+        private Rack FindEmptyRack(Product product_info, int quantity)
+        {
+            if (product_info._storageType.Equals("fold"))
+            {
+                foreach (GeneralPurposeRack rack in _generalRackList)
+                {
+                    if (rack._num_items == 0)
+                        return rack;
+                    if (rack.IsFull() == false &&
+                        rack._productType.Equals(product_info._productType) &&
+                        (rack._shipperID == product_info._shipperID))
+                    {
+                        empty_rack = _generalRackList.FirstOrDefault(rack => rack._num_items == 0);
+                    }
+                        
+
+                }
+            }
+            else
+            {
+                empty_rack = _hangerRackList.FirstOrDefault(rack => rack._num_items == 0);
+            }
+
+            return empty_rack;
+        }
+
         public List<string> SpecifyRobotInitialPosition()
         {
             Console.WriteLine("SpecifyRobotInitialPosition");
 
             List<string> robots = new List<string>();
-            robots.Add("conveyor 0202");
-            robots.Add("picker 0302");
-            robots.Add("hanger 0402");
+            robots.Add("conveyor 0202 0203");
+            robots.Add("picker 0302 0303");
+            robots.Add("hanger 0402 0403");
             return robots;
         }
     }

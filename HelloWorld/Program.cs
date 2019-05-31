@@ -19,7 +19,7 @@ namespace Daiwa
             warehouse.LoadMap("data\\map.csv");
             StartSimulator();
 
-            while(true)
+            while (true)
             {
 
             }
@@ -67,11 +67,11 @@ namespace Daiwa
                 {
                     case "init":
                         string output = warehouse.SpecifyProductInitialPosition(values);
-                        WriteOutput(output);
+                        WriteOutput(output + "\n");
 
                         List<string> robotPositions = warehouse.SpecifyRobotInitialPosition();
                         foreach (string pos in robotPositions)
-                            WriteOutput(pos);
+                            WriteOutput(pos + "\n");
                         break;
                     case "store":
                         Debug.WriteLine(input);
@@ -83,9 +83,10 @@ namespace Daiwa
             }
         }
 
-    static void WriteOutput(string output)
-    {
-        simproc.StandardInput.WriteLine(output);
+        static void WriteOutput(string output)
+        {
+            Debug.WriteLine(output);
+            simproc.StandardInput.Write(output);
+        }
     }
-}
 }

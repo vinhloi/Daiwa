@@ -38,19 +38,15 @@ namespace Daiwa
         public int _num_items;
         public int _max_storage;
 
-        public void SetMaxStorage(MaxStorage max_storage)
+        public virtual void SetMaxStorage(MaxStorage max_storage)
         {
-            if(_storageType.Equals("fold"))
-                _max_storage = max_storage._maxFoldStorage;
-            else
-                _max_storage = max_storage._maxHangerStorage;
         }
 
         public string GetRackPosition()
         {
-            string XX = _location.X.ToString("X2"); 
+            string XX = _location.X.ToString("X2");
             string YY = _location.Y.ToString("X2");
-            return XX + YY + _direction.ToString("D") + _height;
+            return XX + YY + _direction.ToString("d") + _height;
         }
     }
 
@@ -67,7 +63,17 @@ namespace Daiwa
             _itemList = new List<RackItem>();
             _shipperID = -1;
             _num_items = 0;
-            _max_storage = 0;
+            _max_storage = int.MaxValue;
+        }
+
+        public override void SetMaxStorage(MaxStorage max_storage)
+        {
+            _max_storage = max_storage._maxFoldStorage;
+        }
+
+        public bool IsFull()
+        {
+            return (_num_items < _max_storage) ? false : true;
         }
     }
 
@@ -85,6 +91,11 @@ namespace Daiwa
             _shipperID = -1;
             _num_items = 0;
             _max_storage = 0;
+        }
+
+        public override void SetMaxStorage(MaxStorage max_storage)
+        {
+            _max_storage = max_storage._maxHangerStorage;
         }
     }
 }
