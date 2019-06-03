@@ -48,6 +48,16 @@ namespace Daiwa
             string YY = _location.Y.ToString("X2");
             return XX + YY + _direction.ToString("d") + _height;
         }
+
+        public bool IsFull()
+        {
+            return (_num_items >= _max_storage) ? true : false;
+        }
+
+        public bool isEmpty()
+        {
+            return (_num_items == 0) ? true : false;
+        }
     }
 
     public class GeneralPurposeRack : Rack
@@ -70,11 +80,6 @@ namespace Daiwa
         {
             _max_storage = max_storage._maxFoldStorage;
         }
-
-        public bool IsFull()
-        {
-            return (_num_items < _max_storage) ? false : true;
-        }
     }
 
     public class HangerRack : Rack
@@ -85,8 +90,8 @@ namespace Daiwa
             _height = 0;
             _direction = 0;
             _storageType = "hanger";
-
             _productType = "mixed";
+
             _itemList = new List<RackItem>();
             _shipperID = -1;
             _num_items = 0;

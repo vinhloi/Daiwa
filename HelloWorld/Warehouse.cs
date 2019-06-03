@@ -14,8 +14,10 @@ namespace Daiwa
         public int _numRows;
         public int _numCols;
         public int[,] _data;
-        public List<Rack> _generalRackList;
-        public List<Rack> _hangerRackList;
+        public List<Rack> _generalRackList; // racks contain product
+        public List<Rack> _hangerRackList;  // racks contain product
+        public Queue<Rack> _generalEmptyRacksQueue; // empty rack
+        public Queue<Rack> _hangerEmptyRackQueue;   // empty rack
         public List<Robot> _robotList;
         Hashtable _htItems;
         Hashtable _htMaxStorage;
@@ -29,6 +31,8 @@ namespace Daiwa
             _htMaxStorage = new Hashtable();
             _generalRackList = new List<Rack>();
             _hangerRackList = new List<Rack>();
+            _generalEmptyRacksQueue = new Queue<Rack>();
+            _hangerEmptyRackQueue = new Queue<Rack>();
             _robotList = new List<Robot>();
         }
 
@@ -66,7 +70,6 @@ namespace Daiwa
                     CreateObject(r, c, i);
                 }
             }
-
         }
 
         public void CreateObject(int row, int column, int celldata)
@@ -76,21 +79,21 @@ namespace Daiwa
                 case 10: //General-purpose rack (upward/downward directions)
                     for (int height = 1; height <= 5; height++)
                     {
-                        _generalRackList.Add(new GeneralPurposeRack(row, column, height, Direction.Up));
-                        _generalRackList.Add(new GeneralPurposeRack(row, column, height, Direction.Down));
+                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(row, column, height, Direction.Up));
+                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(row, column, height, Direction.Down));
                     }
                     break;
 
                 case 11: //General-purpose rack (leftward/rightward directions)
                     for (int height = 1; height <= 5; height++)
                     {
-                        _generalRackList.Add(new GeneralPurposeRack(row, column, height, Direction.Left));
-                        _generalRackList.Add(new GeneralPurposeRack(row, column, height, Direction.Right));
+                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(row, column, height, Direction.Left));
+                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(row, column, height, Direction.Right));
                     }
                     break;
 
                 case 12: //Hanger rack (leftward/rightward directions)
-                    _hangerRackList.Add(new HangerRack(row, column));
+                    _hangerEmptyRackQueue.Enqueue(new HangerRack(row, column));
                     break;
 
                 case 20: //Receiving point
@@ -151,7 +154,7 @@ namespace Daiwa
                 //Debug.WriteLine(i / 2);
 
                 string product_id = input[i];
-                int quantity = int.Parse(input[i + 1]);
+                int input_quantity = int.Parse(input[i + 1]);
 
                 Product product_info = new Product((string)_htItems[product_id]);
                 if (product_info == null)
@@ -160,61 +163,134 @@ namespace Daiwa
                     continue;
                 }
 
-                MaxStorage max_storage = new MaxStorage((string)_htMaxStorage[product_info._productType]);
-                if (max_storage == null)
+                MaxStorage max_storage_info = new MaxStorage((string)_htMaxStorage[product_info._productType]);
+                if (max_storage_info == null)
                 {
                     Console.WriteLine("Can not find max storage");
                     continue;
                 }
 
-                Rack empty_rack = FindEmptyRack(product_info, quantity);
+                List<Rack> suitable_racks = FindSuitableRacks(product_info, input_quantity, max_storage_info);
 
-                if (empty_rack != null)
+                foreach(Rack rack in suitable_racks)
                 {
-                    empty_rack._productType = product_info._productType;
-                    empty_rack._shipperID = product_info._shipperID;
-                    empty_rack._num_items = quantity;
-                    empty_rack.SetMaxStorage(max_storage);
-                    empty_rack._itemList.Add(new RackItem(product_id, quantity));
+                    if(rack.isEmpty())
+                    {
+                        rack._shipperID = product_info._shipperID;
+                        rack.SetMaxStorage(max_storage_info);
+                        if (rack._storageType.Equals("fold"))
+                        {
+                            _generalRackList.Add(rack);
+                            rack._productType = product_info._productType;
+                        }
+                        else
+                            _hangerRackList.Add(rack);
+                    }
 
-                    string store_product_command = " " + product_id + " " + empty_rack.GetRackPosition();
-                    for (int j = 0; j < quantity; j++)
+                    int stored_quantity = 0;
+                    if ((rack._num_items + input_quantity) <= rack._max_storage)
+                        stored_quantity = input_quantity;
+                    else
+                        stored_quantity = rack._max_storage;
+
+                    rack._itemList.Add(new RackItem(product_id, stored_quantity));
+                    rack._num_items += stored_quantity;
+                    input_quantity -= stored_quantity;
+
+                    string store_product_command = " " + product_id + " " + rack.GetRackPosition();
+                    for (int j = 0; j < stored_quantity; j++)
                         output = output + store_product_command;
-
-                }
-                else
-                {
-                    Console.WriteLine("Can not find empty rack");
                 }
             }
 
             return output;
         }
 
-        private Rack FindEmptyRack(Product product_info, int quantity)
+        private List<Rack> FindSuitableRacks(Product product_info, int quantity, MaxStorage max_storage_info)
         {
+            List<Rack> result = new List<Rack>();
+
             if (product_info._storageType.Equals("fold"))
             {
+                int max_storage = max_storage_info._maxFoldStorage;
+                while (quantity >= max_storage)
+                {
+                    if(_generalEmptyRacksQueue.Count > 0)
+                    {
+                        result.Add(_generalEmptyRacksQueue.Dequeue());
+                        quantity -= max_storage;
+                    }
+                }
+
                 foreach (GeneralPurposeRack rack in _generalRackList)
                 {
-                    if (rack._num_items == 0)
-                        return rack;
+                    if (quantity <= 0) //Get enough rack to store product.
+                        break;
+
+                    // Find rack with the same product type and the same shipper. 
                     if (rack.IsFull() == false &&
                         rack._productType.Equals(product_info._productType) &&
                         (rack._shipperID == product_info._shipperID))
                     {
-                        empty_rack = _generalRackList.FirstOrDefault(rack => rack._num_items == 0);
+                        result.Add(rack);
+                        quantity -= (rack._max_storage - rack._num_items);
                     }
-                        
+                }
 
+                if(quantity > 0) //If still not enough rack, get one from the empty racks
+                {
+                    if (_generalEmptyRacksQueue.Count > 0)
+                    {
+                        result.Add(_generalEmptyRacksQueue.Dequeue());
+                        quantity -= max_storage;
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Can't find rack to store item");
+                    }
                 }
             }
             else
             {
-                empty_rack = _hangerRackList.FirstOrDefault(rack => rack._num_items == 0);
+                int max_storage = max_storage_info._maxHangerStorage;
+                while (quantity >= max_storage)
+                {
+                    if (_hangerEmptyRackQueue.Count > 0)
+                    {
+                        result.Add(_hangerEmptyRackQueue.Dequeue());
+                        quantity -= max_storage;
+                    }
+                }
+
+                foreach (HangerRack rack in _hangerRackList)
+                {
+                    if (quantity <= 0) //Get enough rack to store product.
+                        break;
+
+                    // Find rack with the same shipper. 
+                    if (rack.IsFull() == false &&
+                        (rack._shipperID == product_info._shipperID))
+                    {
+                        result.Add(rack);
+                        quantity -= (rack._max_storage - rack._num_items);
+                    }
+                }
+
+                if (quantity > 0) //If still not enough rack, get one from the empty racks
+                {
+                    if (_hangerEmptyRackQueue.Count > 0)
+                    {
+                        result.Add(_hangerEmptyRackQueue.Dequeue());
+                        quantity -= max_storage;
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Can't find rack to store item");
+                    }
+                }
             }
 
-            return empty_rack;
+            return result;
         }
 
         public List<string> SpecifyRobotInitialPosition()
