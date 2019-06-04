@@ -18,11 +18,13 @@ namespace Daiwa
             warehouse.LoadItemCategoriesFile("data\\item_categories.csv");
             warehouse.LoadMap("data\\map.csv");
             StartSimulator();
-
+            //simproc.WaitForExit();
             while (true)
             {
-
+                string input = simproc.StandardOutput.ReadLine();
+                HandleInput(input);
             }
+
         }
 
         static void StartSimulator()
@@ -48,18 +50,21 @@ namespace Daiwa
                 }
             };
 
-            simproc.OutputDataReceived += new DataReceivedEventHandler(SimulatorOutputDataHandler);
+            //simproc.OutputDataReceived += new DataReceivedEventHandler(SimulatorOutputDataHandler);
 
             simproc.Start();
             simproc.BeginErrorReadLine();
-            simproc.BeginOutputReadLine();
-            simproc.WaitForExit();
+            //simproc.BeginOutputReadLine();
         }
 
         private static void SimulatorOutputDataHandler(object sendingProcess,
            DataReceivedEventArgs outLine)
         {
-            string input = outLine.Data;
+            HandleInput(outLine.Data);
+        }
+
+        private static void HandleInput(string input)
+        {
             if (!String.IsNullOrEmpty(input))
             {
                 List<string> values = input.Split(' ').ToList<string>();
@@ -67,11 +72,11 @@ namespace Daiwa
                 {
                     case "init":
                         string output = warehouse.SpecifyProductInitialPosition(values);
-                        WriteOutput(output + "\n");
+                        WriteOutput(output);
 
                         List<string> robotPositions = warehouse.SpecifyRobotInitialPosition();
                         foreach (string pos in robotPositions)
-                            WriteOutput(pos + "\n");
+                            WriteOutput(pos);
                         break;
                     case "store":
                         Debug.WriteLine(input);
@@ -85,7 +90,7 @@ namespace Daiwa
 
         static void WriteOutput(string output)
         {
-            Debug.WriteLine(output);
+            Debug.Write(output);
             simproc.StandardInput.Write(output);
         }
     }

@@ -38,7 +38,7 @@ namespace Daiwa
 
         public void LoadMap(string map_file)
         {
-            Console.WriteLine("LoadMap");
+            Print("LoadMap");
 
             // Get the file's text.
             string whole_file = File.ReadAllText(map_file);
@@ -113,7 +113,7 @@ namespace Daiwa
 
         public void LoadItemsFile(string items_file)
         {
-            Console.WriteLine("LoadItemsFile");
+            Print("LoadItemsFile");
 
             using (var reader = new StreamReader(items_file))
             {
@@ -129,7 +129,7 @@ namespace Daiwa
 
         public void LoadItemCategoriesFile(string item_categories_file)
         {
-            Console.WriteLine("LoadItemCategoriesFile");
+            Print("LoadItemCategoriesFile");
 
             using (var reader = new StreamReader(item_categories_file))
             {
@@ -146,7 +146,7 @@ namespace Daiwa
 
         public string SpecifyProductInitialPosition(List<string> input)
         {
-            Console.WriteLine("SpecifyProductInitialPosition");
+            Print("SpecifyProductInitialPosition");
 
             string output = "store";
             for (int i = 1; i < input.Count; i += 2)
@@ -159,14 +159,14 @@ namespace Daiwa
                 Product product_info = new Product((string)_htItems[product_id]);
                 if (product_info == null)
                 {
-                    Console.WriteLine("Can not find product info");
+                    Print("Can not find product info");
                     continue;
                 }
 
                 MaxStorage max_storage_info = new MaxStorage((string)_htMaxStorage[product_info._productType]);
                 if (max_storage_info == null)
                 {
-                    Console.WriteLine("Can not find max storage");
+                    Print("Can not find max storage");
                     continue;
                 }
 
@@ -295,13 +295,18 @@ namespace Daiwa
 
         public List<string> SpecifyRobotInitialPosition()
         {
-            Console.WriteLine("SpecifyRobotInitialPosition");
+            Print("SpecifyRobotInitialPosition");
 
             List<string> robots = new List<string>();
             robots.Add("conveyor 0202 0203");
             robots.Add("picker 0302 0303");
             robots.Add("hanger 0402 0403");
             return robots;
+        }
+
+        public void Print(string text)
+        {
+            Console.WriteLine(text);
         }
     }
 }
