@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -13,6 +14,11 @@ namespace Daiwa
 
         static void Main(string[] args)
         {
+            using (StreamWriter writetext = new StreamWriter("error.txt"))
+            {
+                writetext.WriteLine("漢字");
+            }
+
             warehouse = new Warehouse();
             warehouse.LoadItemsFile("data\\items.csv");
             warehouse.LoadItemCategoriesFile("data\\item_categories.csv");
@@ -46,7 +52,10 @@ namespace Daiwa
             {
                 if (errorLine.Data != null)
                 {
-                    Debug.WriteLine("Simulator error: " + errorLine.Data);
+                    using (StreamWriter writetext = new StreamWriter("error.txt"))
+                    {
+                        writetext.WriteLine(errorLine.Data);
+                    }
                 }
             };
 
@@ -71,8 +80,7 @@ namespace Daiwa
                 switch (values[0])
                 {
                     case "init":
-                        string output = warehouse.SpecifyProductInitialPosition(values);
-                        WriteOutput(output);
+                        warehouse.SpecifyProductInitialPosition(values);
 
                         List<string> robotPositions = warehouse.SpecifyRobotInitialPosition();
                         foreach (string pos in robotPositions)
@@ -88,10 +96,15 @@ namespace Daiwa
             }
         }
 
-        static void WriteOutput(string output)
+        public static void WriteOutput(string output)
         {
-            Debug.Write(output);
+            Print(output);
             simproc.StandardInput.Write(output);
+        }
+
+        public static void Print(string text)
+        {
+            Console.WriteLine(text);
         }
     }
 }
