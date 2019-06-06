@@ -6,6 +6,7 @@ using System.Data.Odbc;
 using System.IO;
 using System.Collections;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace Daiwa
 {
@@ -13,7 +14,7 @@ namespace Daiwa
     {
         public int _numRows;
         public int _numCols;
-        public int[,] _data;
+        public Byte[,] _map;
         public List<Rack> _generalRackList; // racks contain product
         public List<Rack> _hangerRackList;  // racks contain product
         public Queue<Rack> _generalEmptyRacksQueue; // empty rack
@@ -22,11 +23,16 @@ namespace Daiwa
         Hashtable _htItems;
         Hashtable _htMaxStorage;
 
+        public int _day;
+        public int _time;
+
+        public AStarPathfinding pathfinder;
+
         public Warehouse()
         {
             _numRows = 0;
             _numCols = 0;
-            _data = null;
+            _map = null;
             _htItems = new Hashtable();
             _htMaxStorage = new Hashtable();
             _generalRackList = new List<Rack>();
@@ -34,6 +40,15 @@ namespace Daiwa
             _generalEmptyRacksQueue = new Queue<Rack>();
             _hangerEmptyRackQueue = new Queue<Rack>();
             _robotList = new List<Robot>();
+
+            LoadItemsFile("data\\items.csv");
+            LoadItemCategoriesFile("data\\item_categories.csv");
+            LoadMap("data\\map.csv");
+
+            pathfinder = new AStarPathfinding(_map);
+            Stack<Point> test = pathfinder.A_StarFindPath(new Point(18,18), new Point(24,26));
+            foreach (Point itm in test)
+                Console.WriteLine((itm.Y + 1) + "," + (itm.X + 1));
         }
 
         public void LoadMap(string map_file)
@@ -53,7 +68,7 @@ namespace Daiwa
             int _num_cols = lines[0].Split(',').Length;
 
             // Allocate the data array.
-            _data = new int[_num_rows, _num_cols];
+            _map = new Byte[_num_rows, _num_cols];
 
             // Load the array.
             for (int r = 0; r < _num_rows; r++)
@@ -61,20 +76,15 @@ namespace Daiwa
                 string[] line_r = lines[r].Split(',');
                 for (int c = 0; c < _num_cols; c++)
                 {
-                    int i = 0;
-                    if (!Int32.TryParse(line_r[c], out i))
-                    {
-                        i = -1;
-                    }
-                    _data[r, c] = i;
-                    CreateObject(r, c, i);
+                    _map[r, c] = Byte.Parse(line_r[c]);
+                    CreateObject(r, c);
                 }
             }
         }
 
-        public void CreateObject(int row, int column, int celldata)
+        private void CreateObject(int row, int column)
         {
-            switch (celldata)
+            switch (_map[row, column])
             {
                 case 10: //General-purpose rack (upward/downward directions)
                     for (int height = 1; height <= 5; height++)
@@ -104,7 +114,7 @@ namespace Daiwa
                 case 22:
                 case 23:
                 case 24:
-                    _robotList.Add(new ShippingRobot(row, column, celldata));
+                    _robotList.Add(new ShippingRobot(row, column, _map[row, column]));
                     break;
                 default:
                     break;
@@ -304,6 +314,22 @@ namespace Daiwa
             robots.Add("picker 0302 0303\n");
             robots.Add("hanger 0402 0403\n");
             return robots;
+        }
+
+        public void UpdateTime(List<string> input)
+        {
+            _day = int.Parse(input[0]);
+            _time = int.Parse(input[1]);
+        }
+
+        public void Pick(List<string> input)
+        {
+
+        }
+
+        public void Slot(List<string> input)
+        {
+
         }
     }
 }

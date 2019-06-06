@@ -14,15 +14,8 @@ namespace Daiwa
 
         static void Main(string[] args)
         {
-            using (StreamWriter writetext = new StreamWriter("error.txt"))
-            {
-                writetext.WriteLine("漢字");
-            }
-
             warehouse = new Warehouse();
-            warehouse.LoadItemsFile("data\\items.csv");
-            warehouse.LoadItemCategoriesFile("data\\item_categories.csv");
-            warehouse.LoadMap("data\\map.csv");
+           
             StartSimulator();
             //simproc.WaitForExit();
             while (true)
@@ -54,7 +47,7 @@ namespace Daiwa
                 {
                     using (StreamWriter writetext = new StreamWriter("error.txt"))
                     {
-                        writetext.WriteLine(errorLine.Data);
+                        writetext.WriteLine(DateTime.Now.ToString("h:mm:ss ") + errorLine.Data);
                     }
                 }
             };
@@ -86,8 +79,20 @@ namespace Daiwa
                         foreach (string pos in robotPositions)
                             WriteOutput(pos);
                         break;
-                    case "store":
-                        Debug.WriteLine(input);
+                    case "pick":
+                        warehouse.Pick(values);
+                        break;
+                    case "slot":
+                        warehouse.Pick(values);
+                        break;
+                    case "0":
+                    case "1":
+                    case "2":
+                    case "3":
+                    case "4":
+                    case "5":
+                    case "6":
+                        warehouse.UpdateTime(values);
                         break;
                     default:
                         Debug.WriteLine(input);
@@ -106,5 +111,6 @@ namespace Daiwa
         {
             Console.WriteLine(text);
         }
+
     }
 }

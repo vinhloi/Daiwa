@@ -56,7 +56,7 @@ namespace Daiwa
 
     public class ShippingRobot : Robot
     {
-        public ShippingRobot(int row, int column, int celldata)
+        public ShippingRobot(int row, int column, Byte celldata)
         {
             _id = celldata - 20; // celldata 21 to 24 = Shipping robot ID 1 to 4
             _location = new Point(column, row);
