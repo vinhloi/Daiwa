@@ -38,6 +38,15 @@ namespace Daiwa
         public int _num_items;
         public int _max_storage;
 
+        public Rack(int x, int y)
+        {
+            _location = new Point(x, y);
+            _itemList = new List<RackItem>();
+            _shipperID = -1;
+            _num_items = 0;
+            _max_storage = int.MaxValue;
+        }
+
         public virtual void SetMaxStorage(MaxStorage max_storage)
         {
         }
@@ -62,18 +71,12 @@ namespace Daiwa
 
     public class GeneralPurposeRack : Rack
     {
-        public GeneralPurposeRack(int row, int column, int height, Direction direction)
+        public GeneralPurposeRack(int x, int y, int height, Direction direction) : base(x, y)
         {
-            _location = new Point(column, row);
             _height = height;
             _direction = direction;
             _storageType = "fold";
-
             _productType = null;
-            _itemList = new List<RackItem>();
-            _shipperID = -1;
-            _num_items = 0;
-            _max_storage = int.MaxValue;
         }
 
         public override void SetMaxStorage(MaxStorage max_storage)
@@ -84,18 +87,12 @@ namespace Daiwa
 
     public class HangerRack : Rack
     {
-        public HangerRack(int row, int column)
+        public HangerRack(int x, int y) : base(x, y)
         {
-            _location = new Point(column, row);
             _height = 0;
             _direction = 0;
             _storageType = "hanger";
             _productType = "mixed";
-
-            _itemList = new List<RackItem>();
-            _shipperID = -1;
-            _num_items = 0;
-            _max_storage = 0;
         }
 
         public override void SetMaxStorage(MaxStorage max_storage)

@@ -5,15 +5,40 @@ using System.Drawing;
 
 namespace Daiwa
 {
+    public enum robot_state
+    {
+        waiting = 0,
+        running = 1
+    }
+
     public class Robot
     {
         public int _id;
         public Point _location;
+        public Point _chargingPoint;
+        public Direction _direction;
         public string _actionList;  // List of action in 60 seconds
+        public robot_state state;
+        public Stack<Point> path;
 
-        public Robot()
+        public Robot(int x, int y, int id)
         {
+            _id = id;
+            _location.X = x;
+            _location.Y = y;
+            _chargingPoint.X = x;
+            _chargingPoint.Y = y;
+            _direction = Direction.Up;
+            _actionList = "";
+            state = robot_state.waiting;
+            path = null;
+        }
 
+        public string GetHexaPosition()
+        {
+            string XX = _location.X.ToString("X2");
+            string YY = _location.Y.ToString("X2");
+            return XX + YY;
         }
 
         public virtual void DoAction()
@@ -25,42 +50,42 @@ namespace Daiwa
 
     public class TransportRobot : Robot
     {
-        public Point _chargingPoint;
-        public Direction _direction;
         public const int _maxItem = 5;
         public int _loadedItem;
+
+        public TransportRobot(int x, int y, int id) : base(x ,y, id)
+        {
+            _loadedItem = 0;
+        }
     }
 
     public class PickingRobot : Robot
     {
-        public Point _chargingPoint;
-        public Direction _direction;
-
+        public PickingRobot(int x, int y, int id) : base(x, y, id)
+        {
+        }
     }
 
     public class HangerRobot : Robot
     {
-        public Point _chargingPoint;
-        public Direction _direction;
+        public HangerRobot(int x, int y, int id) : base(x, y, id)
+        {
+        }
     }
 
     public class ReceivingRobot : Robot
     {
-        public ReceivingRobot(int row, int column)
+        public int _shipperID;
+        public ReceivingRobot(int x, int y, int id) : base(x, y, id)
         {
-            _id = 0;
-            _location = new Point(column, row);
-            _actionList = "";
+            _shipperID = id;
         }
     }
 
     public class ShippingRobot : Robot
     {
-        public ShippingRobot(int row, int column, Byte celldata)
+        public ShippingRobot(int x, int y, int id) : base(x, y, id)
         {
-            _id = celldata - 20; // celldata 21 to 24 = Shipping robot ID 1 to 4
-            _location = new Point(column, row);
-            _actionList = "";
         }
     }
 }

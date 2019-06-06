@@ -19,7 +19,11 @@ namespace Daiwa
         public List<Rack> _hangerRackList;  // racks contain product
         public Queue<Rack> _generalEmptyRacksQueue; // empty rack
         public Queue<Rack> _hangerEmptyRackQueue;   // empty rack
-        public List<Robot> _robotList;
+        public List<Robot> _PickerList;
+        public List<Robot> _HangerList;
+        public List<Robot> _TransporterList;
+        public List<Robot> _ReceiverList;
+        public List<Robot> _ShipperList;
         Hashtable _htItems;
         Hashtable _htMaxStorage;
 
@@ -39,21 +43,22 @@ namespace Daiwa
             _hangerRackList = new List<Rack>();
             _generalEmptyRacksQueue = new Queue<Rack>();
             _hangerEmptyRackQueue = new Queue<Rack>();
-            _robotList = new List<Robot>();
+
+            _PickerList = new List<Robot>();
+            _HangerList = new List<Robot>();
+            _TransporterList = new List<Robot>();
+            _ReceiverList = new List<Robot>();
+            _ShipperList = new List<Robot>();
 
             LoadItemsFile("data\\items.csv");
             LoadItemCategoriesFile("data\\item_categories.csv");
             LoadMap("data\\map.csv");
 
-            pathfinder = new AStarPathfinding(_map);
-            Stack<Point> test = pathfinder.A_StarFindPath(new Point(18,18), new Point(24,26));
-            foreach (Point itm in test)
-                Console.WriteLine((itm.Y + 1) + "," + (itm.X + 1));
         }
 
         public void LoadMap(string map_file)
         {
-            Program.Print("LoadMap");
+            Program.Print("LoadMap\n");
 
             // Get the file's text.
             string whole_file = File.ReadAllText(map_file);
@@ -89,32 +94,32 @@ namespace Daiwa
                 case 10: //General-purpose rack (upward/downward directions)
                     for (int height = 1; height <= 5; height++)
                     {
-                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(row, column, height, Direction.Up));
-                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(row, column, height, Direction.Down));
+                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Up));
+                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Down));
                     }
                     break;
 
                 case 11: //General-purpose rack (leftward/rightward directions)
                     for (int height = 1; height <= 5; height++)
                     {
-                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(row, column, height, Direction.Left));
-                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(row, column, height, Direction.Right));
+                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Left));
+                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Right));
                     }
                     break;
 
                 case 12: //Hanger rack (leftward/rightward directions)
-                    _hangerEmptyRackQueue.Enqueue(new HangerRack(row, column));
+                    _hangerEmptyRackQueue.Enqueue(new HangerRack(column, row));
                     break;
 
                 case 20: //Receiving point
-                    _robotList.Add(new ReceivingRobot(row, column));
+                    _ReceiverList.Add(new ReceivingRobot(column, row, 0));
                     break;
 
                 case 21: // Shipping point (corresponding to Shipper ID 1 to 4)
                 case 22:
                 case 23:
                 case 24:
-                    _robotList.Add(new ShippingRobot(row, column, _map[row, column]));
+                    _ShipperList.Add(new ShippingRobot(column, row, _map[row, column] - 20));
                     break;
                 default:
                     break;
@@ -123,7 +128,7 @@ namespace Daiwa
 
         public void LoadItemsFile(string items_file)
         {
-            Program.Print("LoadItemsFile");
+            Program.Print("LoadItemsFile\n");
 
             using (var reader = new StreamReader(items_file))
             {
@@ -139,7 +144,7 @@ namespace Daiwa
 
         public void LoadItemCategoriesFile(string item_categories_file)
         {
-            Program.Print("LoadItemCategoriesFile");
+            Program.Print("LoadItemCategoriesFile\n");
 
             using (var reader = new StreamReader(item_categories_file))
             {
@@ -157,7 +162,7 @@ namespace Daiwa
         public void SpecifyProductInitialPosition(List<string> input)
         {
             int count = 0;
-            Program.Print("SpecifyProductInitialPosition");
+            Program.Print("SpecifyProductInitialPosition\n");
             Program.WriteOutput("store");
 
             for (int i = 1; i < input.Count; i += 2)
@@ -305,15 +310,101 @@ namespace Daiwa
             return result;
         }
 
-        public List<string> SpecifyRobotInitialPosition()
+        public void SpecifyRobotInitialPosition()
         {
-            Program.Print("SpecifyRobotInitialPosition");
+            //Program.Print("SpecifyRobotInitialPosition");
 
-            List<string> robots = new List<string>();
-            robots.Add("conveyor 0202 0203\n");
-            robots.Add("picker 0302 0303\n");
-            robots.Add("hanger 0402 0403\n");
-            return robots;
+            int id = 10;
+
+            // Init transporter
+            for (int i = 0; i < 10; i++)
+            {
+                _TransporterList.Add(new TransportRobot((50 + i), 11, id++));
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                _TransporterList.Add(new TransportRobot((62 + i), 11, id++));
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                _TransporterList.Add(new TransportRobot(79, 2 + i, id++));
+                _TransporterList.Add(new TransportRobot(80, 2 + i, id++));
+            }
+
+            // Init Picker robots
+            _PickerList.Add(new PickingRobot(18, 26, id++));
+            _PickerList.Add(new PickingRobot(18, 30, id++));
+            _PickerList.Add(new PickingRobot(18, 36, id++));
+            _PickerList.Add(new PickingRobot(18, 40, id++));
+            _PickerList.Add(new PickingRobot(18, 44, id++));
+
+            _PickerList.Add(new PickingRobot(47, 26, id++));
+            _PickerList.Add(new PickingRobot(47, 30, id++));
+            _PickerList.Add(new PickingRobot(47, 36, id++));
+            _PickerList.Add(new PickingRobot(47, 40, id++));
+            _PickerList.Add(new PickingRobot(47, 44, id++));
+
+            for(int i = 0; i < 16; i++)
+            {
+                _PickerList.Add(new PickingRobot((84 + i * 4), 13, id++));
+            }
+
+            for (int i = 0; i < 14; i++)
+            {
+                _PickerList.Add(new PickingRobot(155, (50 + i * 4), id++));
+            }
+
+            for (int i = 0; i < 9; i++)
+            {
+                _PickerList.Add(new PickingRobot(133, (74 + i * 4), id++));
+            }
+
+
+            // Init Hanger robots
+            for (int i = 0; i < 5; i++)
+            {
+                _HangerList.Add(new HangerRobot(64 + i * 4, 32, id++));
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                _HangerList.Add(new HangerRobot(86 + i * 4, 32, id++));
+            }
+
+            for (int i = 0; i < 5; i++)
+            {
+                _HangerList.Add(new HangerRobot(100 + i * 4, 32, id++));
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                _HangerList.Add(new HangerRobot(122 + i * 4, 32, id++));
+            }
+
+            for (int i = 0; i < 9; i++)
+            {
+                _HangerList.Add(new HangerRobot(136 + i * 4, 32, id++));
+            }
+
+            Program.Print(_TransporterList.Count.ToString() + " ");
+            Program.WriteOutput("conveyor");
+            foreach(Robot robot in _TransporterList)
+                Program.WriteOutput(" " + robot.GetHexaPosition());
+            Program.WriteOutput("\n");
+
+            Program.Print(_PickerList.Count.ToString() + " ");
+            Program.WriteOutput("picker");
+            foreach (Robot robot in _PickerList)
+                Program.WriteOutput(" " + robot.GetHexaPosition());
+            Program.WriteOutput("\n");
+
+            Program.Print(_HangerList.Count.ToString() + " ");
+            Program.WriteOutput("hanger");
+            foreach (Robot robot in _HangerList)
+                Program.WriteOutput(" " + robot.GetHexaPosition());
+            Program.WriteOutput("\n");
         }
 
         public void UpdateTime(List<string> input)

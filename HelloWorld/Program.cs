@@ -74,16 +74,13 @@ namespace Daiwa
                 {
                     case "init":
                         warehouse.SpecifyProductInitialPosition(values);
-
-                        List<string> robotPositions = warehouse.SpecifyRobotInitialPosition();
-                        foreach (string pos in robotPositions)
-                            WriteOutput(pos);
+                        warehouse.SpecifyRobotInitialPosition();
                         break;
                     case "pick":
-                        warehouse.Pick(values);
+                        //warehouse.Pick(values);
                         break;
                     case "slot":
-                        warehouse.Pick(values);
+                        //warehouse.Pick(values);
                         break;
                     case "0":
                     case "1":
@@ -109,7 +106,7 @@ namespace Daiwa
 
         public static void Print(string text)
         {
-            Console.WriteLine(text);
+            Console.Write(text);
         }
 
     }
