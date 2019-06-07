@@ -19,13 +19,13 @@ namespace Daiwa
         public List<Rack> _hangerRackList;  // racks contain product
         public Queue<Rack> _generalEmptyRacksQueue; // empty rack
         public Queue<Rack> _hangerEmptyRackQueue;   // empty rack
-        public List<Robot> _PickerList;
-        public List<Robot> _HangerList;
-        public List<Robot> _TransporterList;
-        public List<Robot> _ReceiverList;
-        public List<Robot> _ShipperList;
-        Hashtable _htItems;
-        Hashtable _htMaxStorage;
+        public Dictionary<int, Robot> _DicPicker;
+        public Dictionary<int, Robot> _DicHanger;
+        public Dictionary<int, Robot> _DicTransporter;
+        public Dictionary<int, Robot> _DicReceiver;
+        public Dictionary<int, Robot> _DicShipper;
+        Dictionary<string, string> _DicItems;
+        Dictionary<string, string> _DicMaxStorage;
 
         public int _day;
         public int _time;
@@ -37,18 +37,18 @@ namespace Daiwa
             _numRows = 0;
             _numCols = 0;
             _map = null;
-            _htItems = new Hashtable();
-            _htMaxStorage = new Hashtable();
+            _DicItems = new Dictionary<string, string>();
+            _DicMaxStorage = new Dictionary<string, string>();
             _generalRackList = new List<Rack>();
             _hangerRackList = new List<Rack>();
             _generalEmptyRacksQueue = new Queue<Rack>();
             _hangerEmptyRackQueue = new Queue<Rack>();
 
-            _PickerList = new List<Robot>();
-            _HangerList = new List<Robot>();
-            _TransporterList = new List<Robot>();
-            _ReceiverList = new List<Robot>();
-            _ShipperList = new List<Robot>();
+            _DicPicker = new Dictionary<int, Robot>();
+            _DicHanger = new Dictionary<int, Robot>();
+            _DicTransporter = new Dictionary<int, Robot>();
+            _DicReceiver = new Dictionary<int, Robot>();
+            _DicShipper = new Dictionary<int, Robot>();
 
             LoadItemsFile("data\\items.csv");
             LoadItemCategoriesFile("data\\item_categories.csv");
@@ -112,14 +112,14 @@ namespace Daiwa
                     break;
 
                 case 20: //Receiving point
-                    _ReceiverList.Add(new ReceivingRobot(column, row, 0));
+                    _DicReceiver.Add(0, new ReceivingRobot(column, row, 0));
                     break;
 
                 case 21: // Shipping point (corresponding to Shipper ID 1 to 4)
                 case 22:
                 case 23:
                 case 24:
-                    _ShipperList.Add(new ShippingRobot(column, row, _map[row, column] - 20));
+                    _DicShipper.Add(_map[row, column] - 20, new ShippingRobot(column, row, _map[row, column] - 20));
                     break;
                 default:
                     break;
@@ -137,7 +137,7 @@ namespace Daiwa
                     var line = reader.ReadLine();
                     var values = line.Split(',');
 
-                    _htItems.Add(values[1], line);
+                    _DicItems.Add(values[1], line);
                 }
             }
         }
@@ -153,7 +153,7 @@ namespace Daiwa
                     var line = reader.ReadLine();
                     var values = line.Split(',');
 
-                    _htMaxStorage.Add(values[0], line);
+                    _DicMaxStorage.Add(values[0], line);
                 }
             }
         }
@@ -172,14 +172,14 @@ namespace Daiwa
                 string product_id = input[i];
                 int input_quantity = int.Parse(input[i + 1]);
                 count += input_quantity;
-                Product product_info = new Product((string)_htItems[product_id]);
+                Product product_info = new Product((string)_DicItems[product_id]);
                 if (product_info == null)
                 {
                     Program.Print("Can not find product info");
                     continue;
                 }
 
-                MaxStorage max_storage_info = new MaxStorage((string)_htMaxStorage[product_info._productType]);
+                MaxStorage max_storage_info = new MaxStorage((string)_DicMaxStorage[product_info._productType]);
                 if (max_storage_info == null)
                 {
                     Program.Print("Can not find max storage");
@@ -312,97 +312,97 @@ namespace Daiwa
 
         public void SpecifyRobotInitialPosition()
         {
-            //Program.Print("SpecifyRobotInitialPosition");
+            Program.Print("SpecifyRobotInitialPosition\n");
 
-            int id = 10;
+            Byte id = 10;
 
             // Init transporter
             for (int i = 0; i < 10; i++)
             {
-                _TransporterList.Add(new TransportRobot((50 + i), 11, id++));
+                _DicTransporter.Add(id, new TransportRobot((50 + i), 11, id++));
             }
 
             for (int i = 0; i < 10; i++)
             {
-                _TransporterList.Add(new TransportRobot((62 + i), 11, id++));
+                _DicTransporter.Add(id, new TransportRobot((62 + i), 11, id++));
             }
 
             for (int i = 0; i < 10; i++)
             {
-                _TransporterList.Add(new TransportRobot(79, 2 + i, id++));
-                _TransporterList.Add(new TransportRobot(80, 2 + i, id++));
+                _DicTransporter.Add(id, new TransportRobot(79, 2 + i, id++));
+                _DicTransporter.Add(id, new TransportRobot(80, 2 + i, id++));
             }
 
             // Init Picker robots
-            _PickerList.Add(new PickingRobot(18, 26, id++));
-            _PickerList.Add(new PickingRobot(18, 30, id++));
-            _PickerList.Add(new PickingRobot(18, 36, id++));
-            _PickerList.Add(new PickingRobot(18, 40, id++));
-            _PickerList.Add(new PickingRobot(18, 44, id++));
+            _DicPicker.Add(id, new PickingRobot(18, 26, id++));
+            _DicPicker.Add(id, new PickingRobot(18, 30, id++));
+            _DicPicker.Add(id, new PickingRobot(18, 36, id++));
+            _DicPicker.Add(id, new PickingRobot(18, 40, id++));
+            _DicPicker.Add(id, new PickingRobot(18, 44, id++));
 
-            _PickerList.Add(new PickingRobot(47, 26, id++));
-            _PickerList.Add(new PickingRobot(47, 30, id++));
-            _PickerList.Add(new PickingRobot(47, 36, id++));
-            _PickerList.Add(new PickingRobot(47, 40, id++));
-            _PickerList.Add(new PickingRobot(47, 44, id++));
+            _DicPicker.Add(id, new PickingRobot(47, 26, id++));
+            _DicPicker.Add(id, new PickingRobot(47, 30, id++));
+            _DicPicker.Add(id, new PickingRobot(47, 36, id++));
+            _DicPicker.Add(id, new PickingRobot(47, 40, id++));
+            _DicPicker.Add(id, new PickingRobot(47, 44, id++));
 
             for(int i = 0; i < 16; i++)
             {
-                _PickerList.Add(new PickingRobot((84 + i * 4), 13, id++));
+                _DicPicker.Add(id, new PickingRobot((84 + i * 4), 13, id++));
             }
 
             for (int i = 0; i < 14; i++)
             {
-                _PickerList.Add(new PickingRobot(155, (50 + i * 4), id++));
+                _DicPicker.Add(id, new PickingRobot(155, (50 + i * 4), id++));
             }
 
             for (int i = 0; i < 9; i++)
             {
-                _PickerList.Add(new PickingRobot(133, (74 + i * 4), id++));
+                _DicPicker.Add(id, new PickingRobot(133, (74 + i * 4), id++));
             }
 
 
             // Init Hanger robots
             for (int i = 0; i < 5; i++)
             {
-                _HangerList.Add(new HangerRobot(64 + i * 4, 32, id++));
+                _DicHanger.Add(id, new HangerRobot(64 + i * 4, 32, id++));
             }
 
             for (int i = 0; i < 3; i++)
             {
-                _HangerList.Add(new HangerRobot(86 + i * 4, 32, id++));
+                _DicHanger.Add(id, new HangerRobot(86 + i * 4, 32, id++));
             }
 
             for (int i = 0; i < 5; i++)
             {
-                _HangerList.Add(new HangerRobot(100 + i * 4, 32, id++));
+                _DicHanger.Add(id, new HangerRobot(100 + i * 4, 32, id++));
             }
 
             for (int i = 0; i < 3; i++)
             {
-                _HangerList.Add(new HangerRobot(122 + i * 4, 32, id++));
+                _DicHanger.Add(id, new HangerRobot(122 + i * 4, 32, id++));
             }
 
             for (int i = 0; i < 9; i++)
             {
-                _HangerList.Add(new HangerRobot(136 + i * 4, 32, id++));
+                _DicHanger.Add(id, new HangerRobot(136 + i * 4, 32, id++));
             }
 
-            Program.Print(_TransporterList.Count.ToString() + " ");
+            Program.Print(_DicTransporter.Count.ToString() + " ");
             Program.WriteOutput("conveyor");
-            foreach(Robot robot in _TransporterList)
+            foreach(Robot robot in _DicTransporter.Values)
                 Program.WriteOutput(" " + robot.GetHexaPosition());
             Program.WriteOutput("\n");
 
-            Program.Print(_PickerList.Count.ToString() + " ");
+            Program.Print(_DicPicker.Count.ToString() + " ");
             Program.WriteOutput("picker");
-            foreach (Robot robot in _PickerList)
+            foreach (Robot robot in _DicPicker.Values)
                 Program.WriteOutput(" " + robot.GetHexaPosition());
             Program.WriteOutput("\n");
 
-            Program.Print(_HangerList.Count.ToString() + " ");
+            Program.Print(_DicHanger.Count.ToString() + " ");
             Program.WriteOutput("hanger");
-            foreach (Robot robot in _HangerList)
+            foreach (Robot robot in _DicHanger.Values)
                 Program.WriteOutput(" " + robot.GetHexaPosition());
             Program.WriteOutput("\n");
         }

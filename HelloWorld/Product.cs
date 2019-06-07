@@ -49,7 +49,7 @@ namespace Daiwa
             }
             catch (Exception e)
             {
-                Console.WriteLine("Exception when initialize product " + _productID);
+                Program.Print(e.Message);
             }
         }
     }

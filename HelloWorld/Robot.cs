@@ -13,7 +13,7 @@ namespace Daiwa
 
     public class Robot
     {
-        public int _id;
+        public Byte _id;
         public Point _location;
         public Point _chargingPoint;
         public Direction _direction;
@@ -21,7 +21,7 @@ namespace Daiwa
         public robot_state state;
         public Stack<Point> path;
 
-        public Robot(int x, int y, int id)
+        public Robot(int x, int y, Byte id)
         {
             _id = id;
             _location.X = x;
@@ -41,6 +41,16 @@ namespace Daiwa
             return XX + YY;
         }
 
+        public string Move(Byte[,] map, Point destination)
+        {
+
+            // No obstacle, move to new location
+            _location.X = destination.X;
+            _location.Y = destination.Y;
+            map[_location.Y, _location.X] = _id;
+            return "";
+        }
+
         public virtual void DoAction()
         {
 
@@ -53,7 +63,7 @@ namespace Daiwa
         public const int _maxItem = 5;
         public int _loadedItem;
 
-        public TransportRobot(int x, int y, int id) : base(x ,y, id)
+        public TransportRobot(int x, int y, Byte id) : base(x ,y, id)
         {
             _loadedItem = 0;
         }
@@ -61,14 +71,14 @@ namespace Daiwa
 
     public class PickingRobot : Robot
     {
-        public PickingRobot(int x, int y, int id) : base(x, y, id)
+        public PickingRobot(int x, int y, Byte id) : base(x, y, id)
         {
         }
     }
 
     public class HangerRobot : Robot
     {
-        public HangerRobot(int x, int y, int id) : base(x, y, id)
+        public HangerRobot(int x, int y, Byte id) : base(x, y, id)
         {
         }
     }
@@ -76,7 +86,7 @@ namespace Daiwa
     public class ReceivingRobot : Robot
     {
         public int _shipperID;
-        public ReceivingRobot(int x, int y, int id) : base(x, y, id)
+        public ReceivingRobot(int x, int y, Byte id) : base(x, y, id)
         {
             _shipperID = id;
         }
@@ -84,7 +94,7 @@ namespace Daiwa
 
     public class ShippingRobot : Robot
     {
-        public ShippingRobot(int x, int y, int id) : base(x, y, id)
+        public ShippingRobot(int x, int y, Byte id) : base(x, y, id)
         {
         }
     }
