@@ -31,13 +31,6 @@ namespace Daiwa
 
     public class AStarPathfinding
     {
-        Byte[,] _map;
-
-        public AStarPathfinding(Byte[,] map)
-        {
-            _map = map;
-        }
-
         public Stack<Point> A_StarFindPath(Point startPoint, Point endPoint)
         {
             Location current = null;
@@ -121,7 +114,7 @@ namespace Daiwa
             };
 
             // retur Adjacent Squares which are moveable (value = 0)
-            return proposedLocations.Where(l => _map[l.Y, l.X] == 0).ToList();
+            return proposedLocations.Where(l => Warehouse.Map[l.Y, l.X] == 0).ToList();
         }
 
         private Stack<Point> ReconstructPath(Location current)

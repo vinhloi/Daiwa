@@ -12,9 +12,9 @@ namespace Daiwa
 {
     public class Warehouse
     {
+        public static Byte[,] Map;
         public int _numRows;
         public int _numCols;
-        public Byte[,] _map;
         public List<Rack> _generalRackList; // racks contain product
         public List<Rack> _hangerRackList;  // racks contain product
         public Queue<Rack> _generalEmptyRacksQueue; // empty rack
@@ -36,7 +36,7 @@ namespace Daiwa
         {
             _numRows = 0;
             _numCols = 0;
-            _map = null;
+            Map = null;
             _DicItems = new Dictionary<string, string>();
             _DicMaxStorage = new Dictionary<string, string>();
             _generalRackList = new List<Rack>();
@@ -73,7 +73,7 @@ namespace Daiwa
             int _num_cols = lines[0].Split(',').Length;
 
             // Allocate the data array.
-            _map = new Byte[_num_rows, _num_cols];
+            Map = new Byte[_num_rows, _num_cols];
 
             // Load the array.
             for (int r = 0; r < _num_rows; r++)
@@ -81,7 +81,7 @@ namespace Daiwa
                 string[] line_r = lines[r].Split(',');
                 for (int c = 0; c < _num_cols; c++)
                 {
-                    _map[r, c] = Byte.Parse(line_r[c]);
+                    Map[r, c] = Byte.Parse(line_r[c]);
                     CreateObject(r, c);
                 }
             }
@@ -89,7 +89,7 @@ namespace Daiwa
 
         private void CreateObject(int row, int column)
         {
-            switch (_map[row, column])
+            switch (Map[row, column])
             {
                 case 10: //General-purpose rack (upward/downward directions)
                     for (int height = 1; height <= 5; height++)
@@ -119,7 +119,8 @@ namespace Daiwa
                 case 22:
                 case 23:
                 case 24:
-                    _DicShipper.Add(_map[row, column] - 20, new ShippingRobot(column, row, _map[row, column] - 20));
+                    Byte robot_id = (Byte)(Map[row, column] - 20);
+                    _DicShipper.Add(robot_id, new ShippingRobot(column, row, robot_id));
                     break;
                 default:
                     break;

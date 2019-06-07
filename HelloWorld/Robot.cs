@@ -7,7 +7,7 @@ namespace Daiwa
 {
     public enum robot_state
     {
-        waiting = 0,
+        sleeping = 0,
         running = 1
     }
 
@@ -28,9 +28,10 @@ namespace Daiwa
             _location.Y = y;
             _chargingPoint.X = x;
             _chargingPoint.Y = y;
+            Warehouse.Map[y, x] = id;
             _direction = Direction.Up;
-            _actionList = "";
-            state = robot_state.waiting;
+            _actionList = _id.ToString();
+            state = robot_state.sleeping;
             path = null;
         }
 
@@ -41,14 +42,84 @@ namespace Daiwa
             return XX + YY;
         }
 
-        public string Move(Byte[,] map, Point destination)
+        public void MoveTo(Point destination)
         {
+            Direction movingDirection = GetDirection(destination);
+            if (movingDirection == Direction.Fix)
+                return;
 
-            // No obstacle, move to new location
-            _location.X = destination.X;
-            _location.Y = destination.Y;
-            map[_location.Y, _location.X] = _id;
-            return "";
+            int rotate = movingDirection - _direction;
+            switch(rotate)
+            {
+                case 0: //Robot has the correct direction, move forward
+                    SetNewLocation(destination);
+                    break;
+
+                case -3://rotate clock wise
+                case 1: 
+                    _actionList += " r";
+                    _direction = movingDirection;
+                    break;
+
+                case 3: //rotate counterclockwise
+                case -1:
+                    _actionList += " l";
+                    _direction = movingDirection;
+                    break;
+
+                case 2: //opposite direction, rotate clock wise
+                case -2:
+                    _actionList += " r";
+                    _direction = (Direction)(((int)_direction + 1) % 4);
+                    break;
+            }
+        }
+
+        protected Direction GetDirection(Point destination)
+        {
+            int offset_x = destination.X - _location.X;
+            int offset_y = destination.Y - _location.Y;
+
+            if (offset_x == 0 && offset_y == -1) // move up
+            {
+                return Direction.Up;
+            }
+            else if (offset_x == -1 && offset_y == 0) // move left
+            {
+                return Direction.Left;
+            }
+            else if (offset_x == 0 && offset_y == 1) // move down
+            {
+                return Direction.Down;
+            }
+            else if (offset_x == 1 && offset_y == 0) // move right
+            {
+                return Direction.Right;
+            }
+            else
+            {
+                Program.Print("Error: wrong move");
+                return Direction.Fix;
+            }
+        }
+
+        protected void SetNewLocation(Point new_location)
+        {
+            if (Warehouse.Map[new_location.Y, new_location.X] == 0) // new location is clear
+            {
+                // Clear the old tile
+                Warehouse.Map[_location.Y, _location.X] = 0;
+
+                _location.X = new_location.X;
+                _location.Y = new_location.Y;
+                Warehouse.Map[new_location.Y, new_location.X] = _id;
+
+                _actionList += " f";
+            }
+            else // new location is obstructed
+            {
+                _actionList += " n";//vinh: should check if 2 robot facing each other
+            }
         }
 
         public virtual void DoAction()
