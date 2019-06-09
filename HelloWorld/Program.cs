@@ -15,7 +15,19 @@ namespace Daiwa
         static void Main(string[] args)
         {
             warehouse = new Warehouse();
-           
+
+            //===================
+            //AStarPathfinding finder = new AStarPathfinding();
+            //TransportRobot test = new TransportRobot(50, 11, 10);
+            //test.path = finder.FindPath(test._location, new System.Drawing.Point(54, 26));
+            //while (test.path.Count > 0)
+            //{
+            //    test.DoAction();
+            //}
+            //Print(test._actionList);
+
+            //=======================
+
             StartSimulator();
             //simproc.WaitForExit();
             while (true)

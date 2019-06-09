@@ -53,7 +53,6 @@ namespace Daiwa
             LoadItemsFile("data\\items.csv");
             LoadItemCategoriesFile("data\\item_categories.csv");
             LoadMap("data\\map.csv");
-
         }
 
         public void LoadMap(string map_file)

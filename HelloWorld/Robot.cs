@@ -28,11 +28,11 @@ namespace Daiwa
             _location.Y = y;
             _chargingPoint.X = x;
             _chargingPoint.Y = y;
-            Warehouse.Map[y, x] = id;
             _direction = Direction.Up;
             _actionList = _id.ToString();
             state = robot_state.sleeping;
             path = null;
+            Warehouse.Map[y, x] = id;
         }
 
         public string GetHexaPosition()
@@ -42,11 +42,11 @@ namespace Daiwa
             return XX + YY;
         }
 
-        public void MoveTo(Point destination)
+        public int MoveTo(Point destination)
         {
             Direction movingDirection = GetDirection(destination);
             if (movingDirection == Direction.Fix)
-                return;
+                return 0;
 
             int rotate = movingDirection - _direction;
             switch(rotate)
@@ -73,6 +73,7 @@ namespace Daiwa
                     _direction = (Direction)(((int)_direction + 1) % 4);
                     break;
             }
+            return rotate;
         }
 
         protected Direction GetDirection(Point destination)
@@ -137,6 +138,21 @@ namespace Daiwa
         public TransportRobot(int x, int y, Byte id) : base(x ,y, id)
         {
             _loadedItem = 0;
+        }
+
+        public override void DoAction()
+        {
+            if(path.Count > 0)
+            {
+                int result = MoveTo(path.Peek());
+                if (result == 0)
+                    path.Pop();
+            }
+            else
+            {
+                //vinh: do something
+
+            }
         }
     }
 
