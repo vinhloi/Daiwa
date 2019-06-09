@@ -31,23 +31,27 @@ namespace Daiwa
 
     public class AStarPathfinding
     {
-        public Stack<Point> A_StarFindPath(Point startPoint, Point endPoint)
+        public Stack<Point> FindPath(Point startPoint, Point endPoint)
         {
-            Location current = null;
             var start = new Location(startPoint);
             var goal = new Location(endPoint);
             var openList = new List<Location>();
             var closedList = new List<Location>();
-            int g = 0;
+            start.G = 0;
 
             // start by adding the original position to the open list
             openList.Add(start);
 
             while (openList.Count > 0)
             {
+                Location current = null;
+
                 // get the square with the lowest F score
-                var lowest = openList.Min(l => l.F);
-                current = openList.First(l => l.F == lowest);
+                foreach (Location loc in openList)
+                {
+                    if (current == null || current.F > loc.F)
+                        current = loc;
+                }
 
                 // if current = goal, we reach the destination
                 if (current.X == goal.X && current.Y == goal.Y)
@@ -59,7 +63,6 @@ namespace Daiwa
                 closedList.Add(current);
 
                 var adjacentSquares = GetWalkableAdjacentSquares(current);
-                g++;
 
                 foreach (var adjacentSquare in adjacentSquares)
                 {
@@ -68,9 +71,12 @@ namespace Daiwa
                             && l.Y == adjacentSquare.Y) != null)
                         continue;
 
-                    // if it's not in the open list...
-                    if (openList.FirstOrDefault(l => l.X == adjacentSquare.X
-                            && l.Y == adjacentSquare.Y) == null)
+                    // The distance from start to a neighbor
+                    int g = current.G + 1;
+
+                    Location temp = openList.FirstOrDefault(l => l.X == adjacentSquare.X
+                            && l.Y == adjacentSquare.Y);
+                    if (temp == null) // If it's not in the open list --> Discover a new node
                     {
                         // compute its score, set the parent
                         adjacentSquare.G = g;
@@ -85,11 +91,11 @@ namespace Daiwa
                     {
                         // test if using the current G score makes the adjacent square's F score
                         // lower, if yes update the parent because it means it's a better path
-                        if (g + adjacentSquare.H < adjacentSquare.F)
+                        if (g + temp.H < temp.F)
                         {
-                            adjacentSquare.G = g;
-                            adjacentSquare.F = adjacentSquare.G + adjacentSquare.H;
-                            adjacentSquare.Parent = current;
+                            temp.G = g;
+                            temp.F = temp.G + temp.H;
+                            temp.Parent = current;
                         }
                     }
                 }
@@ -107,10 +113,10 @@ namespace Daiwa
 
             var proposedLocations = new List<Location>()
             {
-                new Location ( x, y - 1 ),
-                new Location ( x, y + 1 ),
                 new Location ( x - 1, y ),
                 new Location ( x + 1, y ),
+                new Location ( x, y - 1 ),
+                new Location ( x, y + 1 ),
             };
 
             // retur Adjacent Squares which are moveable (value = 0)
@@ -126,6 +132,9 @@ namespace Daiwa
                 total_path.Push(new Point(current.X, current.Y));
                 current = current.Parent;
             }
+
+            // remove the first node which is the current location
+            total_path.Pop();
 
             return total_path;
         }
