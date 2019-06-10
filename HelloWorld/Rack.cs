@@ -51,11 +51,56 @@ namespace Daiwa
         {
         }
 
-        public string GetRackPosition()
+        public Point GetPickUpPoint()
+        {
+            Point pickup_point;
+            switch(_direction)
+            {
+                case Direction.Up:
+                    pickup_point = new Point(_location.X, _location.Y - 1) ;
+                    break;
+                case Direction.Right:
+                    pickup_point = new Point(_location.X + 1, _location.Y);
+                    break;
+                case Direction.Down:
+                    pickup_point = new Point(_location.X, _location.Y + 1);
+                    break;
+                case Direction.Left:
+                case Direction.Fix:
+                default:
+                    pickup_point = new Point(_location.X - 1, _location.Y);
+                    break;
+            }
+            return pickup_point;
+        }
+
+        public string GetXXYYDH()
         {
             string XX = _location.X.ToString("X2");
             string YY = _location.Y.ToString("X2");
-            return XX + YY + _direction.ToString("d") + _height;
+            string D = "";
+            switch(_direction)
+            {
+                case Direction.Up:
+                    D = "1";
+                break;
+                case Direction.Down:
+                    D = "2";
+                    break;
+                case Direction.Left:
+                    D = "3";
+                    break;
+                case Direction.Right:
+                    D = "4";
+                    break;
+                case Direction.Fix:
+                    D = "0";
+                    break;
+                default:
+                    D = "0";
+                    break;
+            }
+            return XX + YY + D + _height;
         }
 
         public bool IsFull()
@@ -90,7 +135,7 @@ namespace Daiwa
         public HangerRack(int x, int y) : base(x, y)
         {
             _height = 0;
-            _direction = 0;
+            _direction = Direction.Fix;
             _storageType = "hanger";
             _productType = "mixed";
         }
