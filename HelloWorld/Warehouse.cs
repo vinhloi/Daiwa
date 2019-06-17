@@ -10,6 +10,18 @@ using System.Drawing;
 
 namespace Daiwa
 {
+    public struct Order
+    {
+        public string _productID;
+        public int _quantity;
+
+        public Order(string id, int quantity)
+        {
+            _productID = id;
+            _quantity = quantity;
+        }
+    }
+
     public class Warehouse
     {
         public static Byte[,] Map;
@@ -24,13 +36,14 @@ namespace Daiwa
         public Dictionary<int, Robot> _DicTransporter;
         public Dictionary<int, Robot> _DicReceiver;
         public Dictionary<int, Robot> _DicShipper;
-        Dictionary<string, string> _DicItems;
-        Dictionary<string, string> _DicMaxStorage;
+        Dictionary<string, string> _DicItems;   // Product information
+        Dictionary<string, string> _DicMaxStorage; // Max storage of products
+
+        public Queue<Order> _PickOrders;
+        public Queue<Order> _DicSlotList;
 
         public int _day;
         public int _time;
-
-        public AStarPathfinding pathfinder;
 
         public Warehouse()
         {
@@ -50,6 +63,9 @@ namespace Daiwa
             _DicReceiver = new Dictionary<int, Robot>();
             _DicShipper = new Dictionary<int, Robot>();
 
+            _PickOrders = new Queue<Order>();
+            _DicSlotList = new Queue<Order>();
+
             LoadItemsFile("data\\items.csv");
             LoadItemCategoriesFile("data\\item_categories.csv");
             LoadMap("data\\map.csv");
@@ -57,7 +73,7 @@ namespace Daiwa
 
         public void LoadMap(string map_file)
         {
-            Program.Print("LoadMap\n");
+            //Program.Print("LoadMap\n");
 
             // Get the file's text.
             string whole_file = File.ReadAllText(map_file);
@@ -128,7 +144,7 @@ namespace Daiwa
 
         public void LoadItemsFile(string items_file)
         {
-            Program.Print("LoadItemsFile\n");
+            //Program.Print("LoadItemsFile\n");
 
             using (var reader = new StreamReader(items_file))
             {
@@ -162,7 +178,7 @@ namespace Daiwa
         public void SpecifyProductInitialPosition(List<string> input)
         {
             int count = 0;
-            Program.Print("SpecifyProductInitialPosition\n");
+            //Program.Print("SpecifyProductInitialPosition\n");
             Program.WriteOutput("store");
 
             for (int i = 1; i < input.Count; i += 2)
@@ -171,33 +187,33 @@ namespace Daiwa
 
                 string product_id = input[i];
                 int input_quantity = int.Parse(input[i + 1]);
-                count += input_quantity;
-                Product product_info = new Product((string)_DicItems[product_id]);
-                if (product_info == null)
+                count++;
+                Product product = new Product((string)_DicItems[product_id]);
+                if (product == null)
                 {
                     Program.Print("Can not find product info");
                     continue;
                 }
 
-                MaxStorage max_storage_info = new MaxStorage((string)_DicMaxStorage[product_info._productType]);
+                MaxStorage max_storage_info = new MaxStorage((string)_DicMaxStorage[product._productType]);
                 if (max_storage_info == null)
                 {
                     Program.Print("Can not find max storage");
                     continue;
                 }
 
-                List<Rack> suitable_racks = FindSuitableRacks(product_info, input_quantity, max_storage_info);
+                List<Rack> suitable_racks = FindRackToStore(product, input_quantity, max_storage_info);
 
-                foreach(Rack rack in suitable_racks)
+                foreach (Rack rack in suitable_racks)
                 {
-                    if(rack.isEmpty())
+                    if (rack.isEmpty())
                     {
-                        rack._shipperID = product_info._shipperID;
+                        rack._shipperID = product._shipperID;
                         rack.SetMaxStorage(max_storage_info);
                         if (rack._storageType.Equals("fold"))
                         {
                             _generalRackList.Add(rack);
-                            rack._productType = product_info._productType;
+                            rack._productType = product._productType;
                         }
                         else
                             _hangerRackList.Add(rack);
@@ -213,17 +229,17 @@ namespace Daiwa
                     rack._num_items += stored_quantity;
                     input_quantity -= stored_quantity;
 
-                    string store_product_command = " " + product_id + " " + rack.GetRackPosition();
+                    string store_product_command = " " + product_id + " " + rack.GetXXYYDH();
                     for (int j = 0; j < stored_quantity; j++)
                         Program.WriteOutput(store_product_command);
                 }
             }
 
             Program.WriteOutput("\n");
-            Program.Print("total" + count.ToString());
+            Program.Print("stock total: " + count.ToString());
         }
 
-        private List<Rack> FindSuitableRacks(Product product_info, int quantity, MaxStorage max_storage_info)
+        private List<Rack> FindRackToStore(Product product_info, int quantity, MaxStorage max_storage_info)
         {
             List<Rack> result = new List<Rack>();
 
@@ -232,13 +248,14 @@ namespace Daiwa
                 int max_storage = max_storage_info._maxFoldStorage;
                 while (quantity >= max_storage)
                 {
-                    if(_generalEmptyRacksQueue.Count > 0)
+                    if (_generalEmptyRacksQueue.Count > 0)
                     {
                         result.Add(_generalEmptyRacksQueue.Dequeue());
                         quantity -= max_storage;
                     }
                 }
 
+                // Find empty spot in the racks which contain product
                 foreach (GeneralPurposeRack rack in _generalRackList)
                 {
                     if (quantity <= 0) //Get enough rack to store product.
@@ -254,7 +271,7 @@ namespace Daiwa
                     }
                 }
 
-                if(quantity > 0) //If still not enough rack, get one from the empty racks
+                if (quantity > 0) //If still not enough empty spot, get one from the empty racks
                 {
                     if (_generalEmptyRacksQueue.Count > 0)
                     {
@@ -312,7 +329,11 @@ namespace Daiwa
 
         public void SpecifyRobotInitialPosition()
         {
-            Program.Print("SpecifyRobotInitialPosition\n");
+            //Program.Print("\nSpecifyRobotInitialPosition\n");
+            Program.WriteOutput("conveyor 0202\n");
+            Program.WriteOutput("picker 0302\n");
+            Program.WriteOutput("hanger 0402\n");
+            return;
 
             Byte id = 10;
 
@@ -346,7 +367,7 @@ namespace Daiwa
             _DicPicker.Add(id, new PickingRobot(47, 40, id++));
             _DicPicker.Add(id, new PickingRobot(47, 44, id++));
 
-            for(int i = 0; i < 16; i++)
+            for (int i = 0; i < 16; i++)
             {
                 _DicPicker.Add(id, new PickingRobot((84 + i * 4), 13, id++));
             }
@@ -388,19 +409,19 @@ namespace Daiwa
                 _DicHanger.Add(id, new HangerRobot(136 + i * 4, 32, id++));
             }
 
-            Program.Print(_DicTransporter.Count.ToString() + " ");
+            //Program.Print(_DicTransporter.Count.ToString() + " ");
             Program.WriteOutput("conveyor");
-            foreach(Robot robot in _DicTransporter.Values)
+            foreach (Robot robot in _DicTransporter.Values)
                 Program.WriteOutput(" " + robot.GetHexaPosition());
             Program.WriteOutput("\n");
 
-            Program.Print(_DicPicker.Count.ToString() + " ");
+            //Program.Print(_DicPicker.Count.ToString() + " ");
             Program.WriteOutput("picker");
             foreach (Robot robot in _DicPicker.Values)
                 Program.WriteOutput(" " + robot.GetHexaPosition());
             Program.WriteOutput("\n");
 
-            Program.Print(_DicHanger.Count.ToString() + " ");
+            //Program.Print(_DicHanger.Count.ToString() + " ");
             Program.WriteOutput("hanger");
             foreach (Robot robot in _DicHanger.Values)
                 Program.WriteOutput(" " + robot.GetHexaPosition());
@@ -415,12 +436,133 @@ namespace Daiwa
 
         public void Pick(List<string> input)
         {
+            for (int i = 1; i < input.Count; i += 2)
+            {
+                _PickOrders.Enqueue(new Order(input[i], int.Parse(input[i + 1])));
+            }
 
+            while (_PickOrders.Count() > 0)
+            {
+                Order order = _PickOrders.Peek();
+
+                Product product_info = new Product((string)_DicItems[order._productID]);
+                if (product_info == null)
+                {
+                    Program.Print("Can not find product info");
+                    continue;
+                }
+
+                // Find racks to get enought quanity of product
+                List<Rack> rack_to_pick = FindRackToPick(product_info, order._quantity);
+
+                foreach (Rack rack in rack_to_pick)
+                {
+                    // Get the pickup point of rack
+                    Point pickup_point = rack.GetPickUpPoint();
+
+                    // Find picking robot which is free and near rack
+                    PickingRobot picker = FindRobotToPick(rack);
+                    if (picker == null) // All pickers are busy
+                    {
+                        // vinh: need to consider here.
+                        return;
+                    }
+                    picker.PrepareToPick(pickup_point, order._productID, rack._orderedQuantity);
+
+                    while (rack._orderedQuantity > 0)
+                    {
+                        TransportRobot transporter = FindRobotToTransport(rack);
+                        if (transporter == null) // All transporters are busy
+                        {
+                            return;
+                        }
+
+                        transporter.PrepareToPick(pickup_point, order._productID);
+                        rack._orderedQuantity -= TransportRobot._maxItem;
+                    }
+                }
+
+                // Find robot to execute order. remove from queue.
+                _PickOrders.Dequeue();
+            }
+        }
+
+        private List<Rack> FindRackToPick(Product product, int quantity)
+        {
+            List<Rack> result = new List<Rack>();
+            List<Rack> searchList = product._storageType.Equals("fold") ? _generalRackList : _hangerRackList;
+
+            // Loop through the rack list
+            foreach (Rack rack in searchList)
+            {
+                // Loop through the item list of the rack
+                foreach (RackItem item in rack._itemList)
+                {
+                    // Find the correct product 
+                    if (item._productID.Equals(product._productID) && item._quantity > 0)
+                    {
+                        rack._orderedQuantity = (quantity > item._quantity) ? item._quantity : quantity; 
+                        result.Add(rack);
+                        quantity -= item._quantity;
+                        if (quantity <= 0) // Get enought quantity, return the list
+                            return result;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private PickingRobot FindRobotToPick(Rack rack)
+        {
+            PickingRobot select_robot = null;
+            int current_distance = 0;
+            foreach (PickingRobot robot in _DicPicker.Values)
+            {
+                int new_distance = AStarPathfinding.ComputeHScore(robot._location.X, robot._location.Y, rack._location.X, rack._location.Y);
+                if (robot._state == robot_state.free)
+                {
+                    if (select_robot == null || new_distance < current_distance)
+                    {
+                        select_robot = robot;
+                        current_distance = new_distance;
+                    }
+                }
+            }
+
+            return select_robot;
+        }
+
+        private TransportRobot FindRobotToTransport(Rack rack)
+        {
+            TransportRobot select_robot = null;
+            int current_distance = 0;
+            foreach (TransportRobot robot in _DicTransporter.Values)
+            {
+                int new_distance = AStarPathfinding.ComputeHScore(robot._location.X, robot._location.Y, rack._location.X, rack._location.Y);
+                if (robot._state == robot_state.free)
+                {
+                    if (select_robot == null || new_distance < current_distance)
+                    {
+                        select_robot = robot;
+                        current_distance = new_distance;
+                    }
+                }
+            }
+
+            return select_robot;
         }
 
         public void Slot(List<string> input)
         {
-
+            Program.WriteOutput("0 n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n\n");
+            Program.WriteOutput("1 n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n\n");
+            Program.WriteOutput("2 n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n\n");
+            Program.WriteOutput("3 n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n\n");
+            Program.WriteOutput("4 n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n\n");
+            Program.WriteOutput("10 n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n\n");
+            Program.WriteOutput("11 n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n\n");
+            Program.WriteOutput("12 n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n n\n");
         }
     }
 }

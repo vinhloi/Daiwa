@@ -29,9 +29,9 @@ namespace Daiwa
 
     }
 
-    public class AStarPathfinding
+    public static class AStarPathfinding
     {
-        public Stack<Point> FindPath(Point startPoint, Point endPoint)
+        public static Stack<Point> FindPath(Point startPoint, Point endPoint)
         {
             var start = new Location(startPoint);
             var goal = new Location(endPoint);
@@ -106,7 +106,7 @@ namespace Daiwa
             return null;
         }
 
-        private List<Location> GetWalkableAdjacentSquares(Location currentSquare)
+        private static List<Location> GetWalkableAdjacentSquares(Location currentSquare)
         {
             int x = currentSquare.X;
             int y = currentSquare.Y;
@@ -123,7 +123,7 @@ namespace Daiwa
             return proposedLocations.Where(l => Warehouse.Map[l.Y, l.X] == 0).ToList();
         }
 
-        private Stack<Point> ReconstructPath(Location current)
+        private static Stack<Point> ReconstructPath(Location current)
         {
             Stack<Point> total_path = new Stack<Point>();
 
@@ -139,7 +139,7 @@ namespace Daiwa
             return total_path;
         }
 
-        public int ComputeHScore(int x, int y, int targetX, int targetY)
+        public static int ComputeHScore(int x, int y, int targetX, int targetY)
         {
             return Math.Abs(targetX - x) + Math.Abs(targetY - y);
         }

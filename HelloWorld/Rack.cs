@@ -38,6 +38,8 @@ namespace Daiwa
         public int _num_items;
         public int _max_storage;
 
+        public int _orderedQuantity;
+
         public Rack(int x, int y)
         {
             _location = new Point(x, y);
@@ -45,6 +47,7 @@ namespace Daiwa
             _shipperID = -1;
             _num_items = 0;
             _max_storage = int.MaxValue;
+            _orderedQuantity = 0;
         }
 
         public virtual void SetMaxStorage(MaxStorage max_storage)
@@ -66,6 +69,8 @@ namespace Daiwa
                     pickup_point = new Point(_location.X, _location.Y + 1);
                     break;
                 case Direction.Left:
+                    pickup_point = new Point(_location.X - 1, _location.Y);
+                    break;
                 case Direction.Fix:
                 default:
                     pickup_point = new Point(_location.X - 1, _location.Y);

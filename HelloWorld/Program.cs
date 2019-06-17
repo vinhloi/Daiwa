@@ -57,7 +57,7 @@ namespace Daiwa
             {
                 if (errorLine.Data != null)
                 {
-                    using (StreamWriter writetext = new StreamWriter("error.txt"))
+                    using (StreamWriter writetext = new StreamWriter("error.txt", true))
                     {
                         writetext.WriteLine(DateTime.Now.ToString("h:mm:ss ") + errorLine.Data);
                     }
@@ -81,7 +81,7 @@ namespace Daiwa
         {
             if (!String.IsNullOrEmpty(input))
             {
-                List<string> values = input.Split(' ').ToList<string>();
+                List<string> values = input.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList<string>();
                 switch (values[0])
                 {
                     case "init":
@@ -89,10 +89,12 @@ namespace Daiwa
                         warehouse.SpecifyRobotInitialPosition();
                         break;
                     case "pick":
-                        //warehouse.Pick(values);
+                        Print(input);
+                        warehouse.Pick(values);
                         break;
                     case "slot":
-                        //warehouse.Pick(values);
+                        Print(input);
+                        warehouse.Slot(values);
                         break;
                     case "0":
                     case "1":
@@ -101,10 +103,11 @@ namespace Daiwa
                     case "4":
                     case "5":
                     case "6":
+                        Print(input);
                         warehouse.UpdateTime(values);
                         break;
                     default:
-                        Debug.WriteLine(input);
+                        Print(input);
                         break;
                 }
             }
@@ -112,13 +115,13 @@ namespace Daiwa
 
         public static void WriteOutput(string output)
         {
-            Print(output);
+            //Console.Write(output);
             simproc.StandardInput.Write(output);
         }
 
         public static void Print(string text)
         {
-            Console.Write(text);
+            Console.WriteLine(text);
         }
 
     }
