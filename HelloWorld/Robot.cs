@@ -20,7 +20,7 @@ namespace Daiwa
         public Point _location;
         public Point _chargingPoint;
         public Direction _direction;
-        public string _actionList;  // List of action in 60 seconds
+        public string _actionString;  // List of action in 60 seconds
         public robot_state _state;
         public Stack<Point> _path;
 
@@ -35,7 +35,7 @@ namespace Daiwa
             _chargingPoint.X = x;
             _chargingPoint.Y = y;
             _direction = Direction.Up;
-            _actionList = _id.ToString();
+            _actionString = _id.ToString();
             _state = robot_state.free;
             _path = null;
             Warehouse.Map[y, x] = id;
@@ -66,19 +66,19 @@ namespace Daiwa
 
                 case -3://rotate clock wise
                 case 1:
-                    _actionList += " r";
+                    _actionString += " r";
                     _direction = movingDirection;
                     break;
 
                 case 3: //rotate counterclockwise
                 case -1:
-                    _actionList += " l";
+                    _actionString += " l";
                     _direction = movingDirection;
                     break;
 
                 case 2: //opposite direction, rotate clock wise
                 case -2:
-                    _actionList += " r";
+                    _actionString += " r";
                     _direction = (Direction)(((int)_direction + 1) % 4);
                     break;
             }
@@ -124,15 +124,15 @@ namespace Daiwa
                 _location.Y = new_location.Y;
                 Warehouse.Map[new_location.Y, new_location.X] = _id;
 
-                _actionList += " f";
+                _actionString += " f";
             }
             else // new location is obstructed
             {
-                _actionList += " n";//vinh: should check if 2 robot facing each other
+                _actionString += " n";//vinh: should check if 2 robot facing each other
             }
         }
 
-        public virtual void DoAction()
+        public virtual void GenerateAction(int sec)
         {
 
         }
@@ -149,18 +149,34 @@ namespace Daiwa
             _loadedItem = 0;
         }
 
-        public override void DoAction()
+        public override void GenerateAction(int sec)
         {
-            if (_path.Count > 0)
+            if(sec == 0)
             {
-                int result = MoveTo(_path.Peek());
-                if (result == 0)
-                    _path.Pop();
+                _actionString = _id.ToString();
             }
-            else
-            {
-                //vinh: do something
 
+            if(_state == robot_state.free)
+            {
+                _actionString += " n";
+            }
+
+
+            //if (_path.Count > 0)
+            //{
+            //    int result = MoveTo(_path.Peek());
+            //    if (result == 0)
+            //        _path.Pop();
+            //}
+            //else
+            //{
+            //    //vinh: do something
+
+            //}
+
+            if (sec == 59)
+            {
+                _actionString += "\n";
             }
         }
 
@@ -185,12 +201,48 @@ namespace Daiwa
             _orderedProduct = product_id;
             _orderedQuantity = quantity;
         }
+
+        public override void GenerateAction(int sec)
+        {
+            if (sec == 0)
+            {
+                _actionString = _id.ToString();
+            }
+
+            if (_state == robot_state.free)
+            {
+                _actionString += " n";
+            }
+
+            if (sec == 59)
+            {
+                _actionString += "\n";
+            }
+        }
     }
 
     public class HangerRobot : Robot
     {
         public HangerRobot(int x, int y, Byte id) : base(x, y, id)
         {
+        }
+
+        public override void GenerateAction(int sec)
+        {
+            if (sec == 0)
+            {
+                _actionString = _id.ToString();
+            }
+
+            if (_state == robot_state.free)
+            {
+                _actionString += " n";
+            }
+
+            if (sec == 59)
+            {
+                _actionString += "\n";
+            }
         }
     }
 
@@ -201,12 +253,48 @@ namespace Daiwa
         {
             _shipperID = id;
         }
+
+        public override void GenerateAction(int sec)
+        {
+            if (sec == 0)
+            {
+                _actionString = _id.ToString();
+            }
+
+            if (_state == robot_state.free)
+            {
+                _actionString += " n";
+            }
+
+            if (sec == 59)
+            {
+                _actionString += "\n";
+            }
+        }
     }
 
     public class ShippingRobot : Robot
     {
         public ShippingRobot(int x, int y, Byte id) : base(x, y, id)
         {
+        }
+
+        public override void GenerateAction(int sec)
+        {
+            if (sec == 0)
+            {
+                _actionString = _id.ToString();
+            }
+
+            if (_state == robot_state.free)
+            {
+                _actionString += " n";
+            }
+
+            if (sec == 59)
+            {
+                _actionString += "\n";
+            }
         }
     }
 }

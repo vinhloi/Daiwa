@@ -95,6 +95,7 @@ namespace Daiwa
                     case "slot":
                         Print(input);
                         warehouse.Slot(values);
+                        warehouse.GenerateAction();
                         break;
                     case "0":
                     case "1":
@@ -115,7 +116,7 @@ namespace Daiwa
 
         public static void WriteOutput(string output)
         {
-            //Console.Write(output);
+            Console.Write(output);
             simproc.StandardInput.Write(output);
         }
 
