@@ -11,7 +11,8 @@ namespace Daiwa
         store = 1,
         pick = 2,
         ship = 3,
-        receive = 4
+        receive = 4,
+        waiting = 5
     }
 
     public class Robot
@@ -51,11 +52,15 @@ namespace Daiwa
             return XX + YY;
         }
 
-        public int MoveTo(Point new_location)
+        public virtual void MoveToNextTile()
         {
+            Point new_location = _path.Peek();
+
             Direction movingDirection = GetDirection(new_location);
-            if (movingDirection == Direction.Fix)
-                return 0;
+            if (movingDirection == Direction.Error) 
+            {
+                return; // The new tile is not adjecent to current tile, return
+            }
 
             int rotate = movingDirection - _direction;
             switch (rotate)
@@ -82,10 +87,9 @@ namespace Daiwa
                     _direction = (Direction)(((int)_direction + 1) % 4);
                     break;
             }
-            return rotate;
         }
 
-        protected Direction GetDirection(Point destination)
+        protected virtual Direction GetDirection(Point destination)
         {
             int offset_x = destination.X - _location.X;
             int offset_y = destination.Y - _location.Y;
@@ -109,22 +113,29 @@ namespace Daiwa
             else
             {
                 Program.Print("Error: wrong move");
-                return Direction.Fix;
+                return Direction.Error;
             }
         }
 
-        protected void SetNewLocation(Point new_location)
+        protected virtual void SetNewLocation(Point new_location)
         {
             if (Warehouse.Map[new_location.Y, new_location.X] == 0) // new location is clear
             {
                 // Clear the old tile
                 Warehouse.Map[_location.Y, _location.X] = 0;
 
+                // update location
                 _location.X = new_location.X;
                 _location.Y = new_location.Y;
+
+                // set id on the new tile
                 Warehouse.Map[new_location.Y, new_location.X] = _id;
 
+                // update action string
                 _actionString += " f";
+
+                // Remove old tile from the path
+                _path.Pop();
             }
             else // new location is obstructed
             {

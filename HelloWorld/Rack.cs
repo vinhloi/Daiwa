@@ -7,6 +7,7 @@ namespace Daiwa
 {
     public enum Direction
     {
+        Error = -1,
         Fix = 0,
         Up = 1,
         Right = 2,
