@@ -76,8 +76,6 @@ namespace Daiwa
 
         public void LoadMap(string map_file)
         {
-            //Program.Print("LoadMap\n");
-
             // Get the file's text.
             string whole_file = File.ReadAllText(map_file);
 
@@ -115,6 +113,7 @@ namespace Daiwa
                         _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Up));
                         _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Down));
                     }
+                    Map[row, column] = 1;
                     break;
 
                 case 11: //General-purpose rack (leftward/rightward directions)
@@ -123,21 +122,23 @@ namespace Daiwa
                         _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Left));
                         _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Right));
                     }
+                    Map[row, column] = 1;
                     break;
 
                 case 12: //Hanger rack (leftward/rightward directions)
                     _hangerEmptyRackQueue.Enqueue(new HangerRack(column, row));
+                    Map[row, column] = 1;
                     break;
 
                 case 20: //Receiving point
-                    _Receivers.Add(0, new ReceivingRobot(column, row, 0));
+                    _Receivers.Add(5, new ReceivingRobot(column, row, 5)); // Trick: set id = {5} to avoid 0
                     break;
 
                 case 21: // Shipping point (corresponding to Shipper ID 1 to 4)
                 case 22:
                 case 23:
                 case 24:
-                    Byte robot_id = (Byte)(Map[row, column] - 20);
+                    Byte robot_id = (Byte)(Map[row, column] - 15); // Trick: set id = {6 7 8 9} to avoid 1 
                     _Shippers.Add(robot_id, new ShippingRobot(column, row, robot_id));
                     break;
                 default:
@@ -614,6 +615,11 @@ namespace Daiwa
                 Program.WriteOutput(robot._actionString);
             }
 
+        }
+
+        public static Byte ValueAt(Point location)
+        {
+            return Warehouse.Map[location.Y, location.X];
         }
     }
 }
