@@ -7,19 +7,22 @@ namespace Daiwa
 {
     public class PickingRobot : Robot
     {
-        private int _count;
+        private int _pickingTime;
+        private TransportRobot transporter;
 
         public PickingRobot(int x, int y, Byte id) : base(x, y, id)
         {
-            _count = 10;
+            _pickingTime = 0;
+            transporter = null;
         }
 
-        public void PrepareToPick(Point pickup_point, string product_id, int quantity)
+        public void PrepareToPick(Point pickup_point, string rack_id, string product_id, int quantity)
         {
             _path = AStarPathfinding.FindPath(_location, pickup_point);
             _state = robot_state.pick;
-            _orderedProduct = product_id;
-            _orderedQuantity = quantity;
+            _order._rackID = rack_id;
+            _order._productID = product_id;
+            _order._quantity = quantity;
         }
 
         public override void GenerateAction(int sec)
@@ -32,10 +35,8 @@ namespace Daiwa
             if (_state == robot_state.free || _state == robot_state.waiting) // no action
             {
                 _actionString += " n";
-                return;
             }
-
-            if (_path.Count > 0) // moving
+            else if (_path.Count > 0) // moving
             {
                 Byte robot_id = Warehouse.ValueAt(_path.Peek());
                 if (robot_id == 0) // No robot standing at this tile, road is clear
@@ -66,39 +67,62 @@ namespace Daiwa
         
         private void Pick()
         {
-            if(_count == 10) // start picking
+            if(_pickingTime <  10)
             {
-                
+                if (_pickingTime == 0) // start picking
+                {
+                    transporter = GetAdjacentTransporter();
+                    if (transporter == null)
+                    {
+                        _actionString += " n";
+                        return;
+                    }
+                    else
+                    {
+                        _actionString = _actionString + " p " + transporter._id + " " + _order._rackID + " " + _order._productID;
+                    }
+                }
+                _pickingTime++;
             }
-            else if (_count == 0) // finish picking
+            else // finish picking
             {
-                _count = 10;
+                transporter._loadedItem++;
+                _order._quantity--;
+                if(transporter.IsFull() || _order._quantity == 0)
+                {
+                    transporter.PrepareToShip();
+                }
+                _pickingTime = 0;
             }
-
-            _count--;
         }
 
-        private Byte GetAdjacentTransporter()
+        private TransportRobot GetAdjacentTransporter()
         {
             int x = _location.X;
             int y = _location.Y;
 
-            if(Warehouse.Map[x - 1, y] >= 10)
+            var proposedLocations = new List<Point>()
             {
-            }
-            else if (Warehouse.Map[x + 1, y] >= 10)
+                new Point ( x - 1, y ),
+                new Point ( x + 1, y ),
+                new Point ( x, y - 1 ),
+                new Point ( x, y + 1 ),
+            };
+
+            foreach(Point location in proposedLocations)
             {
-
+                Byte id = Warehouse.ValueAt(location);
+                if(id> 9 && Warehouse._Transporters.ContainsKey(id))
+                {
+                    TransportRobot robot = (TransportRobot)Warehouse._Transporters[id];
+                    if(robot._order._productID.Equals(this._order._productID) 
+                        && robot._state == robot_state.waiting
+                        && robot.IsFull() == false)
+                        return robot;
+                }
             }
-            else if (Warehouse.Map[x, y - 1] >= 10)
-            {
 
-            }
-            else if (Warehouse.Map[x, y + 1] >= 10)
-            {
-
-            }
-
+            return null;
         }
     }
 }

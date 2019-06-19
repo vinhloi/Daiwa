@@ -26,8 +26,7 @@ namespace Daiwa
         public robot_state _state;
         public Stack<Point> _path;
 
-        public string _orderedProduct;
-        public int _orderedQuantity;
+        public Order _order;
 
         private bool _avoid;
 
@@ -41,12 +40,13 @@ namespace Daiwa
             _direction = Direction.Up;
             _actionString = "";
             _state = robot_state.free;
-            _path = null;
+            _path = new Stack<Point>();
             _avoid = false;
             Warehouse.Map[y, x] = id;
 
-            _orderedProduct = "";
-            _orderedQuantity = 0;
+            _order._productID = "";
+            _order._quantity = 0;
+            _order._rackID = "";
         }
 
         public string GetHexaPosition()

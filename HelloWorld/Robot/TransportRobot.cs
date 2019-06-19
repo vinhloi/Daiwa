@@ -31,10 +31,8 @@ namespace Daiwa
             if (_state == robot_state.free || _state == robot_state.waiting) // no action
             {
                 _actionString += " n";
-                return;
-            }
-           
-            if (_path.Count > 0) // moving
+            }          
+            else if (_path.Count > 0) // moving
             {
                 Point new_location = _path.Peek();
                 if (Warehouse.ValueAt(new_location) == 0) // new location is clear
@@ -62,7 +60,27 @@ namespace Daiwa
         {
             _path = AStarPathfinding.FindPath(_location, pickup_point);
             _state = robot_state.pick;
-            _orderedProduct = product_id;
+            _order._productID = product_id;
+        }
+
+        public void PrepareToShip()
+        {
+            Product product = new Product(Warehouse._DicItems[_order._productID]);
+            ShippingRobot shipper = (ShippingRobot)Warehouse._Shippers[product._shipperID];
+            Point ship_point = shipper.GetShipPoint();
+            _path = AStarPathfinding.FindPath(_location, ship_point);
+            _state = robot_state.ship;
+        }
+
+        public void PrepareToReturn()
+        {
+            _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+            _state = robot_state.returning;
+        }
+
+        public bool IsFull()
+        {
+            return (_loadedItem >= _maxItem) ? true : false;
         }
     }
 }

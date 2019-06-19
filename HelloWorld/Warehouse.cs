@@ -14,11 +14,20 @@ namespace Daiwa
     {
         public string _productID;
         public int _quantity;
+        public string _rackID;
 
-        public Order(string id, int quantity)
+        public Order(string product, int quantity)
         {
-            _productID = id;
+            _productID = product;
             _quantity = quantity;
+            _rackID = "";
+        }
+
+        public Order(string product, int quantity, string rack)
+        {
+            _productID = product;
+            _quantity = quantity;
+            _rackID = rack;
         }
     }
 
@@ -29,7 +38,7 @@ namespace Daiwa
         public static Byte[,] Map;
         public int _numRows;
         public int _numCols;
-        Dictionary<string, string> _DicItems;   // Product information
+        public static Dictionary<string, string> _DicItems;   // Product information
         Dictionary<string, string> _DicMaxStorage; // Max storage of products
 
         // List of racks
@@ -39,11 +48,11 @@ namespace Daiwa
         public Queue<Rack> _hangerEmptyRackQueue;   // empty rack
 
         // List of robots
-        public Dictionary<int, Robot> _Pickers;
-        public Dictionary<int, Robot> _Hangers;
-        public Dictionary<int, Robot> _Transporters;
-        public Dictionary<int, Robot> _Receivers;
-        public Dictionary<int, Robot> _Shippers;
+        public static Dictionary<int, Robot> _Pickers;
+        public static Dictionary<int, Robot> _Hangers;
+        public static Dictionary<int, Robot> _Transporters;
+        public static ReceivingRobot _Receiver;
+        public static Dictionary<int, Robot> _Shippers;
 
         public Queue<Order> _PickOrders;
         public Queue<Order> _SlotOrders;
@@ -63,7 +72,7 @@ namespace Daiwa
             _Pickers = new Dictionary<int, Robot>();
             _Hangers = new Dictionary<int, Robot>();
             _Transporters = new Dictionary<int, Robot>();
-            _Receivers = new Dictionary<int, Robot>();
+            _Receiver = null;
             _Shippers = new Dictionary<int, Robot>();
 
             _PickOrders = new Queue<Order>();
@@ -131,15 +140,15 @@ namespace Daiwa
                     break;
 
                 case 20: //Receiving point
-                    _Receivers.Add(5, new ReceivingRobot(column, row, 5)); // Trick: set id = {5} to avoid 0
+                    _Receiver = new ReceivingRobot(column, row, 5); // Trick: set id = {5} to avoid 0
                     break;
 
                 case 21: // Shipping point (corresponding to Shipper ID 1 to 4)
                 case 22:
                 case 23:
                 case 24:
-                    Byte robot_id = (Byte)(Map[row, column] - 15); // Trick: set id = {6 7 8 9} to avoid 1 
-                    _Shippers.Add(robot_id, new ShippingRobot(column, row, robot_id));
+                    // Trick: set id = {6 7 8 9} to avoid 1 
+                    _Shippers.Add(Map[row, column] - 20, new ShippingRobot(column, row, (Byte)(Map[row, column] - 15)));
                     break;
                 default:
                     break;
@@ -148,8 +157,6 @@ namespace Daiwa
 
         public void LoadItemsFile(string items_file)
         {
-            //Program.Print("LoadItemsFile\n");
-
             using (var reader = new StreamReader(items_file))
             {
                 while (!reader.EndOfStream)
@@ -182,13 +189,10 @@ namespace Daiwa
         public void SpecifyProductInitialPosition(List<string> input)
         {
             int count = 0;
-            //Program.Print("SpecifyProductInitialPosition\n");
             Program.WriteOutput("store");
 
             for (int i = 1; i < input.Count; i += 2)
             {
-                //Debug.WriteLine(i / 2);
-
                 string product_id = input[i];
                 int input_quantity = int.Parse(input[i + 1]);
                 count++;
@@ -424,7 +428,6 @@ namespace Daiwa
                 Program.WriteOutput(" " + robot.GetHexaPosition());
             Program.WriteOutput("\n");
 
-            //Program.Print(_DicHanger.Count.ToString() + " ");
             Program.WriteOutput("hanger");
             foreach (Robot robot in _Hangers.Values)
                 Program.WriteOutput(" " + robot.GetHexaPosition());
@@ -470,7 +473,7 @@ namespace Daiwa
                         // vinh: need to consider here.
                         return;
                     }
-                    picker.PrepareToPick(pickup_point, order._productID, rack._orderedQuantity);
+                    picker.PrepareToPick(pickup_point, rack.GetXXYYDH(), order._productID, rack._orderedQuantity);
 
                     while (rack._orderedQuantity > 0)
                     {
@@ -562,7 +565,7 @@ namespace Daiwa
 
         public void GenerateAction()
         {
-            for(int i = 0; i < 60; i++)
+            for (int i = 0; i < 60; i++)
             {
                 foreach(PickingRobot robot in _Pickers.Values)
                 {
@@ -579,15 +582,24 @@ namespace Daiwa
                     robot.GenerateAction(i);
                 }
 
-                foreach (ReceivingRobot robot in _Receivers.Values)
-                {
-                    robot.GenerateAction(i);
-                }
+                _Receiver.GenerateAction(i);
 
                 foreach (ShippingRobot robot in _Shippers.Values)
                 {
                     robot.GenerateAction(i);
                 }
+            }
+
+            Program.WriteOutput(_Receiver._actionString);
+
+            foreach (ShippingRobot robot in _Shippers.Values)
+            {
+                Program.WriteOutput(robot._actionString);
+            }
+
+            foreach (TransportRobot robot in _Transporters.Values)
+            {
+                Program.WriteOutput(robot._actionString);
             }
 
             foreach (PickingRobot robot in _Pickers.Values)
@@ -599,22 +611,6 @@ namespace Daiwa
             {
                 Program.WriteOutput(robot._actionString);
             }
-
-            foreach (TransportRobot robot in _Transporters.Values)
-            {
-                Program.WriteOutput(robot._actionString);
-            }
-
-            foreach (ReceivingRobot robot in _Receivers.Values)
-            {
-                Program.WriteOutput(robot._actionString);
-            }
-
-            foreach (ShippingRobot robot in _Shippers.Values)
-            {
-                Program.WriteOutput(robot._actionString);
-            }
-
         }
 
         public static Byte ValueAt(Point location)
