@@ -136,11 +136,17 @@ namespace Daiwa
 
         public virtual void GenerateAction(int sec)
         {
+            Program.Print("Virtual method");
         }
 
         public virtual void Avoid()
         {
-            _avoid = true;
+            Program.Print("Virtual method");
+        }
+
+        public virtual void PrepareToPick(Point pickup_point, string rack_id, string product_id, int quantity)
+        {
+            Program.Print("Virtual method");
         }
     }
 }

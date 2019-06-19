@@ -16,7 +16,7 @@ namespace Daiwa
             transporter = null;
         }
 
-        public void PrepareToPick(Point pickup_point, string rack_id, string product_id, int quantity)
+        public override void PrepareToPick(Point pickup_point, string rack_id, string product_id, int quantity)
         {
             _path = AStarPathfinding.FindPath(_location, pickup_point);
             _state = robot_state.pick;
@@ -67,7 +67,7 @@ namespace Daiwa
         
         private void Pick()
         {
-            if(_pickingTime <  10)
+            if(_pickingTime <  9)
             {
                 if (_pickingTime == 0) // start picking
                 {

@@ -342,7 +342,7 @@ namespace Daiwa
 
             _Transporters.Add(id, new TransportRobot((50 + 0), 11, id++));
             _Pickers.Add(id, new PickingRobot(18, 26, id++));
-            _Hangers.Add(id, new HangerRobot(64 + 0 * 4, 32, id++));
+            _Hangers.Add(id, new HangingRobot(64 + 0 * 4, 32, id++));
 
             //// Init transporter
             //for (int i = 0; i < 10; i++)
@@ -467,7 +467,7 @@ namespace Daiwa
                     Point pickup_point = rack.GetPickUpPoint();
 
                     // Find picking robot which is free and near rack
-                    PickingRobot picker = FindRobotToPick(rack);
+                    Robot picker = FindRobotToPick(rack);
                     if (picker == null) // All pickers are busy
                     {
                         // vinh: need to consider here.
@@ -519,11 +519,14 @@ namespace Daiwa
             return result;
         }
 
-        private PickingRobot FindRobotToPick(Rack rack)
+        private Robot FindRobotToPick(Rack rack)
         {
-            PickingRobot select_robot = null;
+            Robot select_robot = null;
             int current_distance = 0;
-            foreach (PickingRobot robot in _Pickers.Values)
+
+            Dictionary<int, Robot> searchList = rack._storageType.Equals("fold") ? _Pickers : _Hangers;
+
+            foreach (Robot robot in searchList.Values)
             {
                 int new_distance = AStarPathfinding.ComputeHScore(robot._location.X, robot._location.Y, rack._location.X, rack._location.Y);
                 if (robot._state == robot_state.free)
@@ -572,7 +575,7 @@ namespace Daiwa
                     robot.GenerateAction(i);
                 }
 
-                foreach (HangerRobot robot in _Hangers.Values)
+                foreach (HangingRobot robot in _Hangers.Values)
                 {
                     robot.GenerateAction(i);
                 }
@@ -607,7 +610,7 @@ namespace Daiwa
                 Program.WriteOutput(robot._actionString);
             }
 
-            foreach (HangerRobot robot in _Hangers.Values)
+            foreach (HangingRobot robot in _Hangers.Values)
             {
                 Program.WriteOutput(robot._actionString);
             }
