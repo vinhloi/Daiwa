@@ -340,9 +340,9 @@ namespace Daiwa
 
             Byte id = 10;
 
-            _Transporters.Add(id, new TransportRobot((50 + 0), 11, id++));
+            _Transporters.Add(id, new TransportRobot(62, 24, id++));
             _Pickers.Add(id, new PickingRobot(18, 26, id++));
-            _Hangers.Add(id, new HangingRobot(64 + 0 * 4, 32, id++));
+            _Hangers.Add(id, new HangingRobot(62, 25, id++));
 
             //// Init transporter
             //for (int i = 0; i < 10; i++)
@@ -570,24 +570,24 @@ namespace Daiwa
         {
             for (int i = 0; i < 60; i++)
             {
-                foreach(PickingRobot robot in _Pickers.Values)
-                {
-                    robot.GenerateAction(i);
-                }
-
-                foreach (HangingRobot robot in _Hangers.Values)
-                {
-                    robot.GenerateAction(i);
-                }
-
-                foreach (TransportRobot robot in _Transporters.Values)
-                {
-                    robot.GenerateAction(i);
-                }
-
                 _Receiver.GenerateAction(i);
 
-                foreach (ShippingRobot robot in _Shippers.Values)
+                foreach (Robot robot in _Shippers.Values)
+                {
+                    robot.GenerateAction(i);
+                }
+
+                foreach (Robot robot in _Transporters.Values)
+                {
+                    robot.GenerateAction(i);
+                }
+
+                foreach (Robot robot in _Pickers.Values)
+                {
+                    robot.GenerateAction(i);
+                }
+
+                foreach (Robot robot in _Hangers.Values)
                 {
                     robot.GenerateAction(i);
                 }
@@ -595,22 +595,22 @@ namespace Daiwa
 
             Program.WriteOutput(_Receiver._actionString);
 
-            foreach (ShippingRobot robot in _Shippers.Values)
+            foreach (Robot robot in _Shippers.Values)
             {
                 Program.WriteOutput(robot._actionString);
             }
 
-            foreach (TransportRobot robot in _Transporters.Values)
+            foreach (Robot robot in _Transporters.Values)
             {
                 Program.WriteOutput(robot._actionString);
             }
 
-            foreach (PickingRobot robot in _Pickers.Values)
+            foreach (Robot robot in _Pickers.Values)
             {
                 Program.WriteOutput(robot._actionString);
             }
 
-            foreach (HangingRobot robot in _Hangers.Values)
+            foreach (Robot robot in _Hangers.Values)
             {
                 Program.WriteOutput(robot._actionString);
             }

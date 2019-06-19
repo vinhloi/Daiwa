@@ -62,7 +62,7 @@ namespace Daiwa
                 openList.Remove(current);
                 closedList.Add(current);
 
-                var adjacentSquares = GetWalkableAdjacentSquares(current);
+                var adjacentSquares = GetWalkableAdjacentSquares(current, goal);
 
                 foreach (var adjacentSquare in adjacentSquares)
                 {
@@ -103,13 +103,13 @@ namespace Daiwa
 
             // We can't find the path
             Program.Print("Error: can not find the path from " + startPoint.ToString() + " to " + endPoint.ToString());
-            return null;
+            return new Stack<Point>();
         }
 
-        private static List<Location> GetWalkableAdjacentSquares(Location currentSquare)
+        private static List<Location> GetWalkableAdjacentSquares(Location current, Location goal)
         {
-            int x = currentSquare.X;
-            int y = currentSquare.Y;
+            int x = current.X;
+            int y = current.Y;
 
             var proposedLocations = new List<Location>()
             {
@@ -120,7 +120,7 @@ namespace Daiwa
             };
 
             // retur Adjacent Squares which are moveable (value = 0)
-            return proposedLocations.Where(l => Warehouse.Map[l.Y, l.X] == 0).ToList();
+            return proposedLocations.Where(l => Warehouse.Map[l.Y, l.X] == 0 || (l.X == goal.X && l.Y == goal.Y)).ToList();
         }
 
         private static Stack<Point> ReconstructPath(Location current)
