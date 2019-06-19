@@ -52,7 +52,7 @@ namespace Daiwa
             {
                 if (_state == robot_state.returning)
                     _state = robot_state.free;
-                else if (_state == robot_state.pick)
+                else if (_state == robot_state.pick && _order._quantity > 0)
                 {
                     Pick();
                 }
@@ -88,9 +88,16 @@ namespace Daiwa
             {
                 transporter._loadedItem++;
                 _order._quantity--;
-                if(transporter.IsFull() || _order._quantity == 0)
+                if(transporter.IsFull())
                 {
                     transporter.PrepareToShip();
+                }
+
+                if(_order._quantity == 0)
+                {
+                    transporter.PrepareToShip();
+                    // need to revise this
+                    _state = robot_state.free;
                 }
                 _pickingTime = 0;
             }

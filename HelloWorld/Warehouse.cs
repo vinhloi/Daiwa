@@ -340,9 +340,9 @@ namespace Daiwa
 
             Byte id = 10;
 
-            _Transporters.Add(id, new TransportRobot(62, 24, id++));
-            _Pickers.Add(id, new PickingRobot(18, 26, id++));
-            _Hangers.Add(id, new HangingRobot(62, 25, id++));
+            _Transporters.Add(id, new TransportRobot(82, 1, id++));
+            _Pickers.Add(id, new PickingRobot(82, 2, id++));
+            _Hangers.Add(id, new HangingRobot(64, 25, id++));
 
             //// Init transporter
             //for (int i = 0; i < 10; i++)
@@ -460,6 +460,8 @@ namespace Daiwa
 
                 // Find racks to get enought quanity of product
                 List<Rack> rack_to_pick = FindRackToPick(product_info, order._quantity);
+                if (rack_to_pick.Count == 0)
+                    return;
 
                 foreach (Rack rack in rack_to_pick)
                 {
