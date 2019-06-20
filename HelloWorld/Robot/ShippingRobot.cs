@@ -34,8 +34,8 @@ namespace Daiwa
             {
                 _actionString = (_id - 5).ToString(); // Trick: Because we set id = {6 7 8 9} to avoid 0 and 1 
             }
-            
-            Ship();
+
+            Ship(sec);
 
             if (sec == 59)
             {
@@ -43,39 +43,37 @@ namespace Daiwa
             }
         }
 
-        private void Ship()
+        private void Ship(int sec)
         {
-            if (transporter == null) // shipper is free
+            if (_shippingTime < 4)
             {
-                transporter = GetAdjacentTransporter(); // Find a transporter
-                if (transporter == null)
+                if (_shippingTime == 0)
                 {
-                    _actionString += " n"; // Can't find transporter, return
-                }
-                else
-                {
-                    _state = robot_state.ship;
+                    if (sec + 5 > 59)
+                    {
+                        _actionString += " n";
+                        return;
+                    }
+
+                    transporter = GetAdjacentTransporter(); // Find a transporter
+                    if (transporter == null)
+                    {
+                        _actionString += " n"; // Can't find transporter, return
+                        return;
+                    }
+
                     _actionString = _actionString + " s " + transporter._id + " " + transporter._order._productID;
-                    _shippingTime++;
                 }
+                _shippingTime++;
             }
             else
             {
-                if (_shippingTime < 4) // shipping take 5 seconds
+                transporter._loadedItem--;
+                if (transporter._loadedItem == 0)
                 {
-                    _shippingTime++;
+                    transporter.PrepareToReturn();
                 }
-                else // Finish shipping
-                {
-                    transporter._loadedItem--;
-                    if (transporter._loadedItem == 0)
-                    {
-                        transporter.PrepareToReturn();
-                        transporter = null;
-                    }
-                    _shippingTime = 0;
-                    _state = robot_state.free;
-                }
+                _shippingTime = 0;
             }
         }
 

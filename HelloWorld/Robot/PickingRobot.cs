@@ -59,7 +59,7 @@ namespace Daiwa
                 }
                 else if (_state == robot_state.pick && _order._quantity > 0)
                 {
-                    Pick();
+                    Pick(sec);
                 }
             }
 
@@ -70,22 +70,26 @@ namespace Daiwa
         }
 
 
-        protected void Pick()
+        protected void Pick(int sec)
         {
             if (_pickingTime < 9)
             {
                 if (_pickingTime == 0) // start picking
                 {
+                    if (sec + 10 > 59)
+                    {
+                        _actionString += " n";
+                        return;
+                    }
+
                     transporter = GetAdjacentTransporter();
                     if (transporter == null)
                     {
                         _actionString += " n";
                         return;
                     }
-                    else
-                    {
-                        _actionString = _actionString + " p " + transporter._id + " " + _order._rackID + " " + _order._productID;
-                    }
+
+                    _actionString = _actionString + " p " + transporter._id + " " + _order._rackID + " " + _order._productID;
                 }
                 _pickingTime++;
             }
