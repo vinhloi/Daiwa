@@ -11,6 +11,7 @@ namespace Daiwa
     {
         static Process simproc;
         static Warehouse warehouse;
+        StreamWriter writetext = new StreamWriter("error.txt");
 
         static void Main(string[] args)
         {
@@ -36,6 +37,8 @@ namespace Daiwa
             startInfo.RedirectStandardOutput = true;
             startInfo.RedirectStandardError = true;
             startInfo.StandardErrorEncoding = Encoding.UTF8;
+            startInfo.StandardOutputEncoding = Encoding.UTF8;
+
             startInfo.FileName = "docker.exe";
             startInfo.Arguments = "run -a stdout -a stdin -a stderr -i simulator";
 
@@ -97,6 +100,10 @@ namespace Daiwa
                         break;
                     default:
                         Print(input);
+                        using (StreamWriter writetext = new StreamWriter("output.txt", true))
+                        {
+                            writetext.WriteLine(input);
+                        }
                         break;
                 }
             }
