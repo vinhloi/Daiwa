@@ -66,32 +66,41 @@ namespace Daiwa
                 return; // The new tile is not adjecent to current tile, return
             }
 
-            int rotate = movingDirection - _direction;
+            if (Rotate(movingDirection) == false)
+            {
+                SetLocation(new_location);
+                _actionString += " f";
+                _path.Pop();
+            }
+        }
+
+        protected bool Rotate(Direction new_direction)
+        {
+            int rotate = new_direction - _direction;
             switch (rotate)
             {
-                case 0: //Robot has the correct direction, move forward
-                    SetLocation(new_location);
-                    _actionString += " f";
-                    _path.Pop();
-                    break;
+                case 0: //new direction equals current direction
+                    return false;
 
                 case -3://rotate clock wise
                 case 1:
                     _actionString += " r";
-                    _direction = movingDirection;
-                    break;
+                    _direction = new_direction;
+                    return true;
 
                 case 3: //rotate counterclockwise
                 case -1:
                     _actionString += " l";
-                    _direction = movingDirection;
-                    break;
+                    _direction = new_direction;
+                    return true;
 
                 case 2: //opposite direction, rotate clock wise
                 case -2:
                     _actionString += " r";
                     _direction = (Direction)(((int)_direction + 1) % 4);
-                    break;
+                    return true;
+                default:
+                    return true;
             }
         }
 

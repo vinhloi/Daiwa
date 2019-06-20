@@ -52,8 +52,11 @@ namespace Daiwa
             }
             else // we arrive at the destination
             {
-                if (_state == robot_state.returning)
+                if (_state == robot_state.returning) // robot return to charging point
+                {
                     _state = robot_state.free;
+                    _actionString += " n";
+                }
                 else if (_state == robot_state.pick && _order._quantity > 0)
                 {
                     Pick();
@@ -66,10 +69,10 @@ namespace Daiwa
             }
         }
 
-        
+
         protected void Pick()
         {
-            if(_pickingTime <  9)
+            if (_pickingTime < 9)
             {
                 if (_pickingTime == 0) // start picking
                 {
@@ -90,19 +93,24 @@ namespace Daiwa
             {
                 transporter._loadedItem++;
                 _order._quantity--;
-                if(transporter.IsFull())
+                if (transporter.IsFull())
                 {
                     transporter.PrepareToShip();
                 }
 
-                if(_order._quantity == 0)
+                if (_order._quantity == 0)
                 {
                     transporter.PrepareToShip();
-                    // need to revise this
-                    _state = robot_state.free;
+                    PrepareToReturn();
                 }
                 _pickingTime = 0;
             }
+        }
+
+        public void PrepareToReturn()
+        {
+            _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+            _state = robot_state.returning;
         }
 
         protected TransportRobot GetAdjacentTransporter()
@@ -118,13 +126,13 @@ namespace Daiwa
                 new Point ( x, y + 1 ),
             };
 
-            foreach(Point location in proposedLocations)
+            foreach (Point location in proposedLocations)
             {
                 Byte id = Warehouse.ValueAt(location);
-                if(id> 9 && Warehouse._Transporters.ContainsKey(id))
+                if (id > 9 && Warehouse._Transporters.ContainsKey(id))
                 {
                     TransportRobot robot = (TransportRobot)Warehouse._Transporters[id];
-                    if(robot._order._productID.Equals(this._order._productID) 
+                    if (robot._order._productID.Equals(this._order._productID)
                         && robot._state == robot_state.waiting
                         && robot.IsFull() == false)
                         return robot;

@@ -46,11 +46,19 @@ namespace Daiwa
             }
             else // we arrive at the destination
             {
-                _actionString += " n";
                 if (_state == robot_state.returning)
-                    _state = robot_state.free;
+                {
+                    if (Rotate(Direction.Up) == false)
+                    {
+                        _state = robot_state.free;
+                        _actionString += " n";
+                    }
+                }
                 else
+                {
+                    _actionString += " n";
                     _state = robot_state.waiting;
+                }
             }
 
             if (sec == 59) // Last seconds, add "\n" to end a line

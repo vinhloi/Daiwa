@@ -453,7 +453,7 @@ namespace Daiwa
                     continue;
                 }
 
-                // Find racks to get enought quanity of product
+                // Find racks to get enought quantity of product
                 List<Rack> rack_to_pick = FindRackToPick(product_info, order._quantity);
                 if (rack_to_pick.Count == 0)
                 {
