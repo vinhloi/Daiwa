@@ -23,7 +23,7 @@ namespace Daiwa
             }
 
             // The last point is the pickup point, we need to stop adjacent to it
-            if (_path.Count == 1 && _state != robot_state.returning)
+            if (_path.Count == 1 && _state == robot_state.pick)
             {
                 _state = robot_state.waiting;
             }
@@ -46,8 +46,11 @@ namespace Daiwa
             }
             else // we arrive at the destination
             {
+                _actionString += " n";
                 if (_state == robot_state.returning)
                     _state = robot_state.free;
+                else
+                    _state = robot_state.waiting;
             }
 
             if (sec == 59) // Last seconds, add "\n" to end a line

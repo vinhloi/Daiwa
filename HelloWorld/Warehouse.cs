@@ -444,12 +444,7 @@ namespace Daiwa
         {
             for (int i = 1; i < input.Count; i += 2)
             {
-                _PickOrders.Enqueue(new Order(input[i], int.Parse(input[i + 1])));
-            }
-
-            while (_PickOrders.Count() > 0)
-            {
-                Order order = _PickOrders.Peek();
+                Order order = new Order(input[i], int.Parse(input[i + 1]));
 
                 Product product_info = new Product((string)_DicItems[order._productID]);
                 if (product_info == null)
@@ -461,7 +456,10 @@ namespace Daiwa
                 // Find racks to get enought quanity of product
                 List<Rack> rack_to_pick = FindRackToPick(product_info, order._quantity);
                 if (rack_to_pick.Count == 0)
-                    return;
+                {
+                    _PickOrders.Enqueue(order);
+                    continue;
+                }
 
                 foreach (Rack rack in rack_to_pick)
                 {
@@ -531,7 +529,7 @@ namespace Daiwa
             foreach (Robot robot in searchList.Values)
             {
                 int new_distance = AStarPathfinding.ComputeHScore(robot._location.X, robot._location.Y, rack._location.X, rack._location.Y);
-                if (robot._state == robot_state.free)
+                if (robot._state == robot_state.free || robot._state == robot_state.returning)
                 {
                     if (select_robot == null || new_distance < current_distance)
                     {
@@ -551,7 +549,7 @@ namespace Daiwa
             foreach (TransportRobot robot in _Transporters.Values)
             {
                 int new_distance = AStarPathfinding.ComputeHScore(robot._location.X, robot._location.Y, rack._location.X, rack._location.Y);
-                if (robot._state == robot_state.free)
+                if (robot._state == robot_state.free || robot._state == robot_state.returning)
                 {
                     if (select_robot == null || new_distance < current_distance)
                     {

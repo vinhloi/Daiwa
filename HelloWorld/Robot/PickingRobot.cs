@@ -7,13 +7,15 @@ namespace Daiwa
 {
     public class PickingRobot : Robot
     {
-        private int _pickingTime;
-        private TransportRobot transporter;
+        protected int _pickingTime;
+        protected TransportRobot transporter;
+        protected string type;
 
         public PickingRobot(int x, int y, Byte id) : base(x, y, id)
         {
             _pickingTime = 0;
             transporter = null;
+            type = "picking";
         }
 
         public override void PrepareToPick(Point pickup_point, string rack_id, string product_id, int quantity)
@@ -65,7 +67,7 @@ namespace Daiwa
         }
 
         
-        private void Pick()
+        protected void Pick()
         {
             if(_pickingTime <  9)
             {
@@ -103,7 +105,7 @@ namespace Daiwa
             }
         }
 
-        private TransportRobot GetAdjacentTransporter()
+        protected TransportRobot GetAdjacentTransporter()
         {
             int x = _location.X;
             int y = _location.Y;
