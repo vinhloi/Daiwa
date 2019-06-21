@@ -67,13 +67,6 @@ namespace Daiwa
             }
         }
 
-        public void PrepareToPick(Point pickup_point, string product_id)
-        {
-            _path = AStarPathfinding.FindPath(_location, pickup_point);
-            _state = robot_state.pick;
-            _order._productID = product_id;
-        }
-
         public void PrepareToShip()
         {
             Product product = new Product(Warehouse._DicItems[_order._productID]);

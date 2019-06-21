@@ -54,7 +54,7 @@ namespace Daiwa
         public static ReceivingRobot _Receiver;
         public static Dictionary<int, Robot> _Shippers;
 
-        public Queue<Order> _PickOrders;
+        public List<Order> _PickOrders;
         public Queue<Order> _SlotOrders;
 
         public Warehouse()
@@ -75,7 +75,7 @@ namespace Daiwa
             _Receiver = null;
             _Shippers = new Dictionary<int, Robot>();
 
-            _PickOrders = new Queue<Order>();
+            _PickOrders = new List<Order>();
             _SlotOrders = new Queue<Order>();
 
             LoadItemsFile("data\\items.csv");
@@ -442,55 +442,61 @@ namespace Daiwa
 
         public void Pick(List<string> input)
         {
-            for (int i = 1; i < input.Count; i += 2)
+            for (int i = 1; i < input.Count; i += 2) // Add new order into the list
             {
-                Order order = new Order(input[i], int.Parse(input[i + 1]));
-
-                Product product_info = new Product((string)_DicItems[order._productID]);
-                if (product_info == null)
-                {
-                    Program.Print("Can not find product info");
-                    continue;
-                }
-
-                // Find racks to get enought quantity of product
-                List<Rack> rack_to_pick = FindRackToPick(product_info, order._quantity);
-                if (rack_to_pick.Count == 0)
-                {
-                    _PickOrders.Enqueue(order);
-                    continue;
-                }
-
-                foreach (Rack rack in rack_to_pick)
-                {
-                    // Get the pickup point of rack
-                    Point pickup_point = rack.GetPickUpPoint();
-
-                    // Find picking robot which is free and near rack
-                    Robot picker = FindRobotToPick(rack);
-                    if (picker == null) // All pickers are busy
-                    {
-                        // vinh: need to consider here.
-                        return;
-                    }
-                    picker.PrepareToPick(pickup_point, rack.GetXXYYDH(), order._productID, rack._orderedQuantity);
-
-                    while (rack._orderedQuantity > 0)
-                    {
-                        TransportRobot transporter = FindRobotToTransport(rack);
-                        if (transporter == null) // All transporters are busy
-                        {
-                            return;
-                        }
-
-                        transporter.PrepareToPick(pickup_point, order._productID);
-                        rack._orderedQuantity -= TransportRobot._maxItem;
-                    }
-                }
-
-                // Find robot to execute order. remove from queue.
-                _PickOrders.Dequeue();
+                _PickOrders.Insert(0, new Order(input[i], int.Parse(input[i + 1])));
             }
+
+            // Start solving order from the list, including the old orders
+            for (int i = _PickOrders.Count - 1; i >= 0; i--)
+            {
+                if (HandlePickOrder(_PickOrders[i]) == false)
+                    continue;
+                else
+                    _PickOrders.RemoveAt(i);
+            }
+        }
+
+        private bool HandlePickOrder(Order order)
+        {
+            Product product_info = new Product((string)_DicItems[order._productID]);
+            if (product_info == null)
+            {
+                Program.Print("Can not find product info");
+                return false;
+            }
+
+            // Find racks to get enought quantity of product
+            List<Rack> rack_to_pick = FindRackToPick(product_info, order._quantity);
+            if (rack_to_pick.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (Rack rack in rack_to_pick)
+            {
+                // Get the pickup point of rack
+                Point pickup_point = rack.GetPickUpPoint();
+
+                // Find picking robot which is free and near rack
+                Robot picker = FindRobotToPick(rack);
+                if (picker == null) // All pickers are busy
+                {
+                    return false;
+                }
+
+                TransportRobot transporter = FindRobotToTransport(rack);
+                if (transporter == null) // All transporters are busy
+                {
+                    return false;
+                }
+
+                picker.PrepareToPick(pickup_point, rack.GetXXYYDH(), order._productID, rack._orderedQuantity);
+                transporter.PrepareToPick(pickup_point, rack.GetXXYYDH(), order._productID, rack._orderedQuantity);
+                rack._orderedQuantity -= TransportRobot._maxItem;
+            }
+
+            return true;
         }
 
         private List<Rack> FindRackToPick(Product product, int quantity)
@@ -507,7 +513,7 @@ namespace Daiwa
                     // Find the correct product 
                     if (item._productID.Equals(product._productID) && item._quantity > 0)
                     {
-                        rack._orderedQuantity = (quantity > item._quantity) ? item._quantity : quantity; 
+                        rack._orderedQuantity = (quantity > item._quantity) ? item._quantity : quantity;
                         result.Add(rack);
                         quantity -= item._quantity;
                         if (quantity <= 0) // Get enought quantity, return the list
@@ -603,16 +609,22 @@ namespace Daiwa
             foreach (Robot robot in _Transporters.Values)
             {
                 Program.WriteOutput(robot._actionString);
+                string debug = "(" + (robot._location.X + 1) + "," + (robot._location.Y + 1) + ") " + robot._direction + " " + robot._state + "\n";
+                Program.Print(debug);
             }
 
             foreach (Robot robot in _Pickers.Values)
             {
                 Program.WriteOutput(robot._actionString);
+                string debug = "(" + (robot._location.X + 1) + "," + (robot._location.Y + 1) + ") " + robot._direction + " " + robot._state + "\n";
+                Program.Print(debug);
             }
 
             foreach (Robot robot in _Hangers.Values)
             {
                 Program.WriteOutput(robot._actionString);
+                string debug = "(" + (robot._location.X + 1) + "," + (robot._location.Y + 1) + ") " + robot._direction + " " + robot._state + "\n";
+                Program.Print(debug);
             }
         }
 

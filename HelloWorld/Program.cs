@@ -80,11 +80,11 @@ namespace Daiwa
                         warehouse.SpecifyRobotInitialPosition();
                         break;
                     case "pick":
-                        Print(input);
+                        Print(input + "\n");
                         warehouse.Pick(values);
                         break;
                     case "slot":
-                        Print(input);
+                        Print(input + "\n");
                         warehouse.Slot(values);
                         warehouse.GenerateAction();
                         break;
@@ -95,11 +95,11 @@ namespace Daiwa
                     case "4":
                     case "5":
                     case "6":
-                        Print(input);
+                        Print(input + "\n");
                         warehouse.UpdateTime(values);
                         break;
                     default:
-                        Print(input);
+                        Print(input + "\n");
                         using (StreamWriter writetext = new StreamWriter("output.txt", true))
                         {
                             writetext.WriteLine(input);
@@ -117,7 +117,7 @@ namespace Daiwa
 
         public static void Print(string text)
         {
-            Console.WriteLine(text);
+            Console.Write(text);
         }
 
     }
