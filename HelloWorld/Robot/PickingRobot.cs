@@ -62,8 +62,11 @@ namespace Daiwa
             {
                 if (_state == robot_state.returning) // robot return to charging point
                 {
-                    _state = robot_state.free;
-                    _actionString += " n";
+                    if (Rotate(Direction.Up) == false) // rotate to upward position
+                    {
+                        _state = robot_state.free;
+                        _actionString += " n";
+                    }
                 }
                 else if (_state == robot_state.pick && _order._quantity > 0)
                 {
