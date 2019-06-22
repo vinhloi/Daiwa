@@ -25,7 +25,7 @@ namespace Daiwa
                 _actionString = _id.ToString(); // add id at sec 0
             }
 
-            if (_state == robot_state.free || _state == robot_state.waiting) // no action
+            if (_state == robot_state.free) // no action
             {
                 _actionString += " n";
             }
@@ -38,7 +38,24 @@ namespace Daiwa
                 }
                 else // new location is obstructed
                 {
-                    _actionString += " n"; //vinh: should check if 2 robot facing each other
+                    Robot another_robot = Warehouse._AllMovingRobots[robot_id];
+                    if (another_robot._path.Count == 0)// anther robot is stopping
+                    {
+                        if (Warehouse._Transporters.ContainsKey(another_robot._id))
+                            another_robot.Reroute();
+                        else
+                            this.Reroute();
+                    }
+                    else // anther robot is moving
+                    {
+                        if (IsFacing(another_robot))
+                        {
+                            if (another_robot.Reroute() == false)
+                                this.Reroute();
+                        }
+                    }
+                        
+                    _actionString += " n";
                 }
             }
             else // we arrive at the destination
@@ -102,12 +119,6 @@ namespace Daiwa
             }
         }
 
-        public void PrepareToReturn()
-        {
-            _path = AStarPathfinding.FindPath(_location, _chargingPoint);
-            _state = robot_state.returning;
-        }
-
         protected TransportRobot GetAdjacentTransporter()
         {
             int x = _location.X;
@@ -128,13 +139,32 @@ namespace Daiwa
                 {
                     TransportRobot robot = (TransportRobot)Warehouse._Transporters[id];
                     if (robot._order._productID.Equals(this._order._productID)
-                        && robot._state == robot_state.waiting
+                        && robot._state == robot_state.pick
                         && robot.IsFull() == false)
                         return robot;
                 }
             }
 
             return null;
+        }
+
+        public override bool Reroute()
+        {
+            switch (_state)
+            {
+                case robot_state.pick:
+                    if (_path.Count == 0)
+                        return false;
+                    _path = AStarPathfinding.FindPath(_location, _pickup_point);
+                    return true;
+                case robot_state.returning:
+                    if (_path.Count == 0)
+                        return false;
+                    _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 }

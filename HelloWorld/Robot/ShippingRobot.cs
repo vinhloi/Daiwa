@@ -85,8 +85,9 @@ namespace Daiwa
                 if (id > 9 && Warehouse._Transporters.ContainsKey(id))
                 {
                     TransportRobot robot = (TransportRobot)Warehouse._Transporters[id];
-                    if (robot._state == robot_state.waiting
-                        && robot._loadedItem > 0)
+                    if (robot._state == robot_state.ship
+                        && robot._loadedItem > 0 
+                        && robot._path.Count == 0)
                         return robot;
                 }
             }
@@ -98,6 +99,11 @@ namespace Daiwa
         {
             _random = (_random + 1) % 4;
             return _shipPoints[_random];
+        }
+
+        public override void PrepareToReturn()
+        {
+            Program.Print("This robot can't move");
         }
 
         protected override void MoveToNextTile()

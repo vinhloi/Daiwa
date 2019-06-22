@@ -31,6 +31,11 @@ namespace Daiwa
             }
         }
 
+        public override void PrepareToReturn()
+        {
+            Program.Print("This robot can't move");
+        }
+
         protected override void MoveToNextTile()
         {
             Program.Print("This robot can't move");

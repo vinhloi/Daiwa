@@ -5,16 +5,6 @@ using System.Drawing;
 
 namespace Daiwa
 {
-    public enum Direction
-    {
-        Error = -1,
-        Fix = 0,
-        Up = 1,
-        Right = 2,
-        Down = 3,
-        Left = 4
-    }
-
     public struct RackItem
     {
         public string _productID;

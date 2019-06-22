@@ -9,6 +9,7 @@ namespace Daiwa
     {
         public const int _maxItem = 5;
         public int _loadedItem;
+        public Point _ship_point;
 
         public TransportRobot(int x, int y, Byte id) : base(x, y, id)
         {
@@ -23,12 +24,12 @@ namespace Daiwa
             }
 
             // The last point is the pickup point, we need to stop adjacent to it
-            if (_path.Count == 1 && _state == robot_state.pick)
+            if (_path.Count == 1 && _state == robot_state.pick && _path.Peek().Equals(_pickup_point))
             {
-                _state = robot_state.waiting;
+                _path.Pop();
             }
 
-            if (_state == robot_state.free || _state == robot_state.waiting) // no action
+            if (_state == robot_state.free) // no action
             {
                 _actionString += " n";
             }          
@@ -57,7 +58,6 @@ namespace Daiwa
                 else
                 {
                     _actionString += " n";
-                    _state = robot_state.waiting;
                 }
             }
 
@@ -67,21 +67,72 @@ namespace Daiwa
             }
         }
 
+        public override bool Reroute()
+        {
+            switch(_state)
+            {
+                case robot_state.pick:
+                    return FindNewRouteToPick();
+                case robot_state.ship:
+                    if (_path.Count == 0)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        _path = AStarPathfinding.FindPath(_location, _ship_point);
+                        return true;
+                    }
+                case robot_state.returning:
+                    if (_path.Count == 0)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                        return true;
+                    }
+                default:
+                    return false;
+            }
+        }
+
+        public bool FindNewRouteToPick()
+        {
+            int x = _pickup_point.X;
+            int y = _pickup_point.Y;
+
+            var proposedLocations = new List<Point>()
+            {
+                new Point ( x - 1, y ),
+                new Point ( x + 1, y ),
+                new Point ( x, y - 1 ),
+                new Point ( x, y + 1 ),
+            };
+
+            foreach (Point newgoal in proposedLocations)
+            {
+                if (Warehouse.ValueAt(newgoal) == 0)
+                {
+                    _path = AStarPathfinding.FindPath(_location, newgoal);
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public void PrepareToShip()
         {
             Product product = new Product(Warehouse._DicItems[_order._productID]);
             ShippingRobot shipper = (ShippingRobot)Warehouse._Shippers[product._shipperID];
-            Point ship_point = shipper.GetShipPoint();
-            _path = AStarPathfinding.FindPath(_location, ship_point);
+            _ship_point = shipper.GetShipPoint();
+
+            _path = AStarPathfinding.FindPath(_location, _ship_point);
             _state = robot_state.ship;
         }
 
-        public void PrepareToReturn()
-        {
-            _path = AStarPathfinding.FindPath(_location, _chargingPoint);
-            _state = robot_state.returning;
-        }
-
+      
         public bool IsFull()
         {
             return (_loadedItem >= _maxItem) ? true : false;

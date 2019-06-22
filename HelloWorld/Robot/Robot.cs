@@ -12,8 +12,17 @@ namespace Daiwa
         pick = 2,
         ship = 3,
         receive = 4,
-        waiting = 5,
-        returning = 6
+        returning = 5
+    }
+
+    public enum Direction
+    {
+        Error = -1,
+        Fix = 0,
+        Up = 1,
+        Right = 2,
+        Down = 3,
+        Left = 4
     }
 
     public class Robot
@@ -25,7 +34,7 @@ namespace Daiwa
         public string _actionString;  // List of action in 60 seconds
         public robot_state _state;
         public Stack<Point> _path;
-
+        public Point _pickup_point;
         public Order _order;
 
         private bool _avoid;
@@ -157,9 +166,35 @@ namespace Daiwa
         {
             _path = AStarPathfinding.FindPath(_location, pickup_point);
             _state = robot_state.pick;
+
             _order._rackID = rack_id;
             _order._productID = product_id;
             _order._quantity = quantity;
+            _pickup_point = pickup_point;
+        }
+
+        public virtual void PrepareToReturn()
+        {
+            _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+            _state = robot_state.returning;
+        }
+
+        public virtual bool Reroute()
+        {
+            Program.Print("Virtual method");
+            return false;
+        }
+
+        public bool IsFacing(Robot another_robot)
+        {
+            if((_direction == Direction.Up && another_robot._direction== Direction.Down) ||
+                (_direction == Direction.Down && another_robot._direction == Direction.Up) ||
+                (_direction == Direction.Left && another_robot._direction == Direction.Left) ||
+                (_direction == Direction.Right && another_robot._direction == Direction.Right))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

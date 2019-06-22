@@ -51,6 +51,7 @@ namespace Daiwa
         public static Dictionary<int, Robot> _Pickers;
         public static Dictionary<int, Robot> _Hangers;
         public static Dictionary<int, Robot> _Transporters;
+        public static Dictionary<int, Robot> _AllMovingRobots;
         public static ReceivingRobot _Receiver;
         public static Dictionary<int, Robot> _Shippers;
 
@@ -72,6 +73,7 @@ namespace Daiwa
             _Pickers = new Dictionary<int, Robot>();
             _Hangers = new Dictionary<int, Robot>();
             _Transporters = new Dictionary<int, Robot>();
+            _AllMovingRobots = new Dictionary<int, Robot>();
             _Receiver = null;
             _Shippers = new Dictionary<int, Robot>();
 
@@ -340,10 +342,9 @@ namespace Daiwa
 
             Byte id = 10;
 
-            _Transporters.Add(id, new TransportRobot(82, 1, id++));
-            _Pickers.Add(id, new PickingRobot(82, 2, id++));
-            _Hangers.Add(id, new HangingRobot(64, 25, id++));
-
+            _Transporters.Add(id, new TransportRobot(81, 13, id++));
+            _Pickers.Add(id, new PickingRobot(82, 13, id++));
+            _Hangers.Add(id, new HangingRobot(83, 13, id++));
             //// Init transporter
             //for (int i = 0; i < 10; i++)
             //{
@@ -417,12 +418,27 @@ namespace Daiwa
             //}
 
             //Program.Print(_DicTransporter.Count.ToString() + " ");
+
+            foreach (KeyValuePair<int, Robot> entry in _Transporters)
+            {
+                _AllMovingRobots.Add(entry.Key, entry.Value);
+            }
+
+            foreach (KeyValuePair<int, Robot> entry in _Pickers)
+            {
+                _AllMovingRobots.Add(entry.Key, entry.Value);
+            }
+
+            foreach (KeyValuePair<int, Robot> entry in _Hangers)
+            {
+                _AllMovingRobots.Add(entry.Key, entry.Value);
+            }
+
             Program.WriteOutput("conveyor");
             foreach (Robot robot in _Transporters.Values)
                 Program.WriteOutput(" " + robot.GetHexaPosition());
             Program.WriteOutput("\n");
 
-            //Program.Print(_DicPicker.Count.ToString() + " ");
             Program.WriteOutput("picker");
             foreach (Robot robot in _Pickers.Values)
                 Program.WriteOutput(" " + robot.GetHexaPosition());
@@ -583,17 +599,7 @@ namespace Daiwa
                     robot.GenerateAction(i);
                 }
 
-                foreach (Robot robot in _Transporters.Values)
-                {
-                    robot.GenerateAction(i);
-                }
-
-                foreach (Robot robot in _Pickers.Values)
-                {
-                    robot.GenerateAction(i);
-                }
-
-                foreach (Robot robot in _Hangers.Values)
+                foreach (Robot robot in _AllMovingRobots.Values)
                 {
                     robot.GenerateAction(i);
                 }
@@ -606,21 +612,7 @@ namespace Daiwa
                 Program.WriteOutput(robot._actionString);
             }
 
-            foreach (Robot robot in _Transporters.Values)
-            {
-                Program.WriteOutput(robot._actionString);
-                string debug = "(" + (robot._location.X + 1) + "," + (robot._location.Y + 1) + ") " + robot._direction + " " + robot._state + "\n";
-                Program.Print(debug);
-            }
-
-            foreach (Robot robot in _Pickers.Values)
-            {
-                Program.WriteOutput(robot._actionString);
-                string debug = "(" + (robot._location.X + 1) + "," + (robot._location.Y + 1) + ") " + robot._direction + " " + robot._state + "\n";
-                Program.Print(debug);
-            }
-
-            foreach (Robot robot in _Hangers.Values)
+            foreach (Robot robot in _AllMovingRobots.Values)
             {
                 Program.WriteOutput(robot._actionString);
                 string debug = "(" + (robot._location.X + 1) + "," + (robot._location.Y + 1) + ") " + robot._direction + " " + robot._state + "\n";
