@@ -109,12 +109,13 @@ namespace Daiwa
                 for (int c = 0; c < _num_cols; c++)
                 {
                     Map[r, c] = Byte.Parse(line_r[c]);
-                    CreateObject(r, c);
+                    if(c < _num_cols - 1 && c != 0 && r != 0 && r < _num_rows - 1)
+                        CreateObject(r, c, line_r[c + 1]);
                 }
             }
         }
 
-        private void CreateObject(int row, int column)
+        private void CreateObject(int row, int column, string wall)
         {
             switch (Map[row, column])
             {
@@ -131,7 +132,8 @@ namespace Daiwa
                     for (int height = 1; height <= 5; height++)
                     {
                         _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Left));
-                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Right));
+                        if(wall.Equals("1") == false) //walk around for racks at (146, 3)
+                            _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Right));
                     }
                     Map[row, column] = 1;
                     break;
@@ -467,7 +469,7 @@ namespace Daiwa
             for (int i = _PickOrders.Count - 1; i >= 0; i--)
             {
                 if (HandlePickOrder(_PickOrders[i]) == false)
-                    continue;
+                    return;
                 else
                     _PickOrders.RemoveAt(i);
             }
@@ -479,14 +481,15 @@ namespace Daiwa
             if (product_info == null)
             {
                 Program.Print("Can not find product info");
-                return false;
+                return true;
             }
 
             // Find racks to get enought quantity of product
             List<Rack> rack_to_pick = FindRackToPick(product_info, order._quantity);
             if (rack_to_pick.Count == 0)
             {
-                return false;
+                Program.Print("Can not find rack");
+                return true;
             }
 
             foreach (Rack rack in rack_to_pick)
@@ -498,12 +501,14 @@ namespace Daiwa
                 Robot picker = FindRobotToPick(rack);
                 if (picker == null) // All pickers are busy
                 {
+                    Program.Print("All pickers are busy");
                     return false;
                 }
 
                 TransportRobot transporter = FindRobotToTransport(rack);
                 if (transporter == null) // All transporters are busy
                 {
+                    Program.Print("All transporters are busy");
                     return false;
                 }
 
