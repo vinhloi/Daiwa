@@ -73,11 +73,6 @@ namespace Daiwa
                     Pick(sec);
                 }
             }
-
-            if (sec == 59) // Last seconds, add "\n" to end a line
-            {
-                _actionString += "\n";
-            }
         }
 
 
@@ -100,7 +95,7 @@ namespace Daiwa
                         return;
                     }
 
-                    _actionString = _actionString + " p " + transporter._id + " " + _order._rackID + " " + _order._productID;
+                    _actionString = _actionString + " p " + transporter._id + " " + _order._rack.GetXXYYDH() + " " + _order._productID;
                 }
                 _pickingTime++;
             }
@@ -108,6 +103,7 @@ namespace Daiwa
             {
                 transporter._loadedItem++;
                 _order._quantity--;
+                _order._rack.RemoveItem(_order._productID);
                 if (transporter.IsFull())
                 {
                     transporter.PrepareToShip();

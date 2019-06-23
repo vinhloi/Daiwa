@@ -111,7 +111,6 @@ namespace Daiwa
 
         public static void WriteOutput(string output)
         {
-            Console.Write(output);
             simproc.StandardInput.Write(output);
         }
 

@@ -14,20 +14,20 @@ namespace Daiwa
     {
         public string _productID;
         public int _quantity;
-        public string _rackID;
+        public Rack _rack;
 
         public Order(string product, int quantity)
         {
             _productID = product;
             _quantity = quantity;
-            _rackID = "";
+            _rack = null;
         }
 
-        public Order(string product, int quantity, string rack)
+        public Order(string product, int quantity, Rack rack)
         {
             _productID = product;
             _quantity = quantity;
-            _rackID = rack;
+            _rack = rack;
         }
     }
 
@@ -507,8 +507,8 @@ namespace Daiwa
                     return false;
                 }
 
-                picker.PrepareToPick(pickup_point, rack.GetXXYYDH(), order._productID, rack._orderedQuantity);
-                transporter.PrepareToPick(pickup_point, rack.GetXXYYDH(), order._productID, rack._orderedQuantity);
+                picker.PrepareToPick(pickup_point, rack, order._productID, rack._orderedQuantity);
+                transporter.PrepareToPick(pickup_point, rack, order._productID, rack._orderedQuantity);
                 rack._orderedQuantity -= TransportRobot._maxItem;
             }
 
@@ -605,17 +605,17 @@ namespace Daiwa
                 }
             }
 
-            Program.WriteOutput(_Receiver._actionString);
+            Program.WriteOutput(_Receiver._actionString + "\n");
 
             foreach (Robot robot in _Shippers.Values)
             {
-                Program.WriteOutput(robot._actionString);
+                Program.WriteOutput(robot._actionString + "\n");
             }
 
             foreach (Robot robot in _AllMovingRobots.Values)
             {
-                Program.WriteOutput(robot._actionString);
-                string debug = "(" + (robot._location.X + 1) + "," + (robot._location.Y + 1) + ") " + robot._direction + " " + robot._state + "\n";
+                Program.WriteOutput(robot._actionString + "\n");
+                string debug = robot._actionString + " (" + (robot._location.X + 1) + "," + (robot._location.Y + 1) + ") " + robot._direction + " " + robot._state + "\n";
                 Program.Print(debug);
             }
         }

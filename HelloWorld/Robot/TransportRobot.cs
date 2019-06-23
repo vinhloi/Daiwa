@@ -60,11 +60,6 @@ namespace Daiwa
                     _actionString += " n";
                 }
             }
-
-            if (sec == 59) // Last seconds, add "\n" to end a line
-            {
-                _actionString += "\n";
-            }
         }
 
         public override bool Reroute()

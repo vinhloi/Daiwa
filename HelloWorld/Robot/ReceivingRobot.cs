@@ -24,11 +24,6 @@ namespace Daiwa
             {
                 _actionString += " n";
             }
-
-            if (sec == 59)
-            {
-                _actionString += "\n";
-            }
         }
 
         public override void PrepareToReturn()

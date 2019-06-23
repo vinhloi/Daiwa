@@ -36,11 +36,6 @@ namespace Daiwa
             }
 
             Ship(sec);
-
-            if (sec == 59)
-            {
-                _actionString += "\n";
-            }
         }
 
         private void Ship(int sec)

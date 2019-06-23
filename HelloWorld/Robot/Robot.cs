@@ -53,9 +53,7 @@ namespace Daiwa
             _avoid = false;
             Warehouse.Map[y, x] = id;
 
-            _order._productID = "";
-            _order._quantity = 0;
-            _order._rackID = "";
+            _order = new Order();
         }
 
         public string GetHexaPosition()
@@ -162,12 +160,12 @@ namespace Daiwa
             Program.Print("Virtual method");
         }
 
-        public virtual void PrepareToPick(Point pickup_point, string rack_id, string product_id, int quantity)
+        public virtual void PrepareToPick(Point pickup_point, Rack rack, string product_id, int quantity)
         {
             _path = AStarPathfinding.FindPath(_location, pickup_point);
             _state = robot_state.pick;
 
-            _order._rackID = rack_id;
+            _order._rack = rack;
             _order._productID = product_id;
             _order._quantity = quantity;
             _pickup_point = pickup_point;

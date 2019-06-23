@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
+using System.Linq;
 
 namespace Daiwa
 {
-    public struct RackItem
+    public class RackItem
     {
         public string _productID;
         public int _quantity;
@@ -107,6 +108,17 @@ namespace Daiwa
         public bool isEmpty()
         {
             return (_num_items == 0) ? true : false;
+        }
+
+        public void RemoveItem(string product_id)
+        {
+            RackItem obj = _itemList.FirstOrDefault(x => x._productID.Equals(product_id));
+            if (obj != null)
+            {
+                obj._quantity--;
+                if (obj._quantity == 0)
+                    _itemList.Remove(obj);
+            }
         }
     }
 
