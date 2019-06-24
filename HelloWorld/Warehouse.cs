@@ -465,13 +465,16 @@ namespace Daiwa
                 _PickOrders.Insert(0, new Order(input[i], int.Parse(input[i + 1])));
             }
 
-            // Start solving order from the list, including the old orders
-            for (int i = _PickOrders.Count - 1; i >= 0; i--)
+            if(_time < 709)
             {
-                if (HandlePickOrder(_PickOrders[i]) == false)
-                    return;
-                else
-                    _PickOrders.RemoveAt(i);
+                // Start solving order from the list, including the old orders
+                for (int i = _PickOrders.Count - 1; i >= 0; i--)
+                {
+                    if (HandlePickOrder(_PickOrders[i]) == false)
+                        return;
+                    else
+                        _PickOrders.RemoveAt(i);
+                }
             }
         }
 
@@ -501,20 +504,21 @@ namespace Daiwa
                 Robot picker = FindRobotToPick(rack);
                 if (picker == null) // All pickers are busy
                 {
-                    Program.Print("All pickers are busy");
+                    //Program.Print("All pickers are busy");
                     return false;
                 }
 
                 TransportRobot transporter = FindRobotToTransport(rack);
                 if (transporter == null) // All transporters are busy
                 {
-                    Program.Print("All transporters are busy");
+                    //Program.Print("All transporters are busy");
                     return false;
                 }
 
                 picker.PrepareToPick(pickup_point, rack, order._productID, rack._orderedQuantity);
                 transporter.PrepareToPick(pickup_point, rack, order._productID, rack._orderedQuantity);
                 rack._orderedQuantity -= TransportRobot._maxItem;
+                Program.Print("Handle pick " + order._productID + " " + order._quantity);
             }
 
             return true;
@@ -615,6 +619,7 @@ namespace Daiwa
             foreach (Robot robot in _Shippers.Values)
             {
                 Program.WriteOutput(robot._actionString + "\n");
+                Program.Print(robot._actionString + "\n");
             }
 
             foreach (Robot robot in _AllMovingRobots.Values)

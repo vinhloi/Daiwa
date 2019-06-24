@@ -8,12 +8,12 @@ namespace Daiwa
     public class TransportRobot : Robot
     {
         public const int _maxItem = 5;
-        public int _loadedItem;
+        public Queue<string> _loadedItems;
         public Point _ship_point;
 
         public TransportRobot(int x, int y, Byte id) : base(x, y, id)
         {
-            _loadedItem = 0;
+            _loadedItems = new Queue<string>();
         }
 
         public override void GenerateAction(int sec)
@@ -130,7 +130,7 @@ namespace Daiwa
       
         public bool IsFull()
         {
-            return (_loadedItem >= _maxItem) ? true : false;
+            return (_loadedItems.Count >= _maxItem) ? true : false;
         }
     }
 }

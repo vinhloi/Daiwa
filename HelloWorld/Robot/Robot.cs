@@ -173,8 +173,13 @@ namespace Daiwa
 
         public virtual void PrepareToReturn()
         {
-            _path = AStarPathfinding.FindPath(_location, _chargingPoint);
-            _state = robot_state.returning;
+            if(_state != robot_state.returning && _state != robot_state.free)
+            {
+                _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                _state = robot_state.returning;
+            }
+
+           
         }
 
         public virtual bool Reroute()

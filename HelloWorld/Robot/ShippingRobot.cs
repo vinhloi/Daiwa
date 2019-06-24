@@ -57,16 +57,22 @@ namespace Daiwa
                         return;
                     }
 
-                    _actionString = _actionString + " s " + transporter._id + " " + transporter._order._productID;
+                    _actionString = _actionString + " s " + transporter._id + " " + transporter._loadedItems.Peek();
                 }
                 _shippingTime++;
             }
             else
             {
-                transporter._loadedItem--;
-                if (transporter._loadedItem == 0)
+                transporter._loadedItems.Dequeue();
+                if (transporter._loadedItems.Count == 0)
                 {
-                    transporter.PrepareToReturn();
+                    if(transporter._order._quantity == 0)
+                        transporter.PrepareToReturn();
+                    else
+                    {
+                        transporter._state = robot_state.pick;
+                        transporter.FindNewRouteToPick();
+                    }
                 }
                 _shippingTime = 0;
             }
@@ -81,7 +87,7 @@ namespace Daiwa
                 {
                     TransportRobot robot = (TransportRobot)Warehouse._Transporters[id];
                     if (robot._state == robot_state.ship
-                        && robot._loadedItem > 0 
+                        && robot._loadedItems.Count > 0 
                         && robot._path.Count == 0)
                         return robot;
                 }

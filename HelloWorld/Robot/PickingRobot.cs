@@ -101,7 +101,7 @@ namespace Daiwa
             }
             else // finish picking
             {
-                transporter._loadedItem++;
+                transporter._loadedItems.Enqueue(_order._productID);
                 _order._quantity--;
                 _order._rack.RemoveItem(_order._productID);
                 if (transporter.IsFull())
