@@ -85,7 +85,7 @@ namespace Daiwa
                         break;
                     case "slot":
                         Print(input + "\n");
-                        warehouse.Slot(values);
+                        //warehouse.Slot(values);
                         warehouse.GenerateAction();
                         break;
                     case "0":

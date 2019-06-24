@@ -37,8 +37,6 @@ namespace Daiwa
         public Point _pickup_point;
         public Order _order;
 
-        private bool _avoid;
-
         public Robot(int x, int y, Byte id)
         {
             _id = id;
@@ -50,7 +48,6 @@ namespace Daiwa
             _actionString = "";
             _state = robot_state.free;
             _path = new Stack<Point>();
-            _avoid = false;
             Warehouse.Map[y, x] = id;
 
             _order = new Order();

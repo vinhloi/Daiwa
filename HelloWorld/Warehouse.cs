@@ -63,7 +63,7 @@ namespace Daiwa
         public static Dictionary<int, Robot> _Shippers;
 
         public List<Order> _PickOrders;
-        public Queue<Order> _SlotOrders;
+        public List<Order> _SlotOrders;
 
         public Warehouse()
         {
@@ -85,7 +85,7 @@ namespace Daiwa
             _Shippers = new Dictionary<int, Robot>();
 
             _PickOrders = new List<Order>();
-            _SlotOrders = new Queue<Order>();
+            _SlotOrders = new List<Order>();
 
             LoadItemsFile("data\\items.csv");
             LoadItemCategoriesFile("data\\item_categories.csv");
@@ -568,9 +568,54 @@ namespace Daiwa
                     return false;
                 }
 
-                picker.PrepareToPick(pickup_point, rack, order._productID, rack._orderedQuantity);
-                transporter.PrepareToPick(pickup_point, rack, order._productID, rack._orderedQuantity);
-                rack._orderedQuantity -= TransportRobot._maxItem;
+                picker.PrepareToPick(pickup_point, rack, order._productID, rack._expectedPickQuantity);
+                transporter.PrepareToPick(pickup_point, rack, order._productID, rack._expectedPickQuantity);
+                Program.Print("Handle pick " + order._productID + " " + order._quantity);
+            }
+
+            return true;
+        }
+
+        private bool HandleSlotOrder(Order order)
+        {
+            Product product = new Product((string)_DicItems[order._productID]);
+            if (product == null)
+            {
+                Program.Print("Can not find product info");
+                return true;
+            }
+
+            MaxStorage max_storage_info = new MaxStorage((string)_DicMaxStorage[product._productType]);
+            if (max_storage_info == null)
+            {
+                Program.Print("Can not find max storage");
+                return true;
+            }
+
+            List<Rack> suitable_racks = FindRackToStore(product, order._quantity, max_storage_info);
+
+            foreach (Rack rack in suitable_racks)
+            {
+                // Get the pickup point of rack
+                Point pickup_point = rack.GetPickUpPoint();
+
+                // Find picking robot which is free and near rack
+                Robot picker = FindRobotToPick(rack);
+                if (picker == null) // All pickers are busy
+                {
+                    //Program.Print("All pickers are busy");
+                    return false;
+                }
+
+                TransportRobot transporter = FindRobotToTransport(rack);
+                if (transporter == null) // All transporters are busy
+                {
+                    //Program.Print("All transporters are busy");
+                    return false;
+                }
+
+                picker.PrepareToPick(pickup_point, rack, order._productID, rack._expectedPickQuantity);
+                transporter.PrepareToPick(pickup_point, rack, order._productID, rack._expectedPickQuantity);
                 Program.Print("Handle pick " + order._productID + " " + order._quantity);
             }
 
@@ -591,7 +636,7 @@ namespace Daiwa
                     // Find the correct product 
                     if (item._productID.Equals(product._productID) && item._quantity > 0)
                     {
-                        rack._orderedQuantity = (quantity > item._quantity) ? item._quantity : quantity;
+                        rack._expectedPickQuantity = (quantity > item._quantity) ? item._quantity : quantity;
                         result.Add(rack);
                         quantity -= item._quantity;
                         if (quantity <= 0) // Get enought quantity, return the list
@@ -648,6 +693,34 @@ namespace Daiwa
 
         public void Slot(List<string> input)
         {
+            for (int i = 1; i < input.Count; i += 2) // Add new order into the list
+            {
+                _SlotOrders.Insert(0, new Order(input[i], int.Parse(input[i + 1])));
+            }
+
+            if (_time == 0 && _day != 0) // resume the activity of previous day
+            {
+                //ResumeActivityLastday();
+            }
+
+            if (_time < 714)
+            {
+                // Start solving order from the list, including the old orders
+                for (int i = _PickOrders.Count - 1; i >= 0; i--)
+                {
+                    if (HandleSlotOrder(_PickOrders[i]) == false)
+                        return;
+                    else
+                        _PickOrders.RemoveAt(i);
+                }
+            }
+            else
+            {
+                foreach (Robot robot in _AllMovingRobots.Values)
+                {
+                    robot.PrepareToReturn();
+                }
+            }
         }
 
         public void GenerateAction()

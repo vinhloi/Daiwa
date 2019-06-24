@@ -30,7 +30,9 @@ namespace Daiwa
         public int _num_items;
         public int _max_storage;
 
-        public int _orderedQuantity;
+        public int _expectedPickQuantity;
+
+        public int _expectedSlotQuantity;
 
         public Rack(int x, int y)
         {
@@ -39,7 +41,8 @@ namespace Daiwa
             _shipperID = -1;
             _num_items = 0;
             _max_storage = int.MaxValue;
-            _orderedQuantity = 0;
+            _expectedPickQuantity = 0;
+            _expectedSlotQuantity = 0;
         }
 
         public virtual void SetMaxStorage(MaxStorage max_storage)
@@ -116,6 +119,8 @@ namespace Daiwa
             if (obj != null)
             {
                 obj._quantity--;
+                _num_items--;
+                _expectedPickQuantity--;
                 if (obj._quantity == 0)
                     _itemList.Remove(obj);
             }
