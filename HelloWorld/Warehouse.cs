@@ -10,11 +10,18 @@ using System.Drawing;
 
 namespace Daiwa
 {
-    public struct Order
+    public class Order
     {
         public string _productID;
         public int _quantity;
         public Rack _rack;
+
+        public Order()
+        {
+            _productID = "";
+            _quantity = 0;
+            _rack = null;
+        }
 
         public Order(string product, int quantity)
         {
@@ -465,7 +472,12 @@ namespace Daiwa
                 _PickOrders.Insert(0, new Order(input[i], int.Parse(input[i + 1])));
             }
 
-            if(_time < 709)
+            if (_time == 0 && _day != 0) // resume the activity of previous day
+            {
+                ResumeActivityLastday();
+            }
+
+            if (_time < 714)
             {
                 // Start solving order from the list, including the old orders
                 for (int i = _PickOrders.Count - 1; i >= 0; i--)
@@ -474,6 +486,47 @@ namespace Daiwa
                         return;
                     else
                         _PickOrders.RemoveAt(i);
+                }
+            }
+            else
+            {
+                foreach (Robot robot in _AllMovingRobots.Values)
+                {
+                    robot.PrepareToReturn();
+                }
+            }
+        }
+
+        private static void ResumeActivityLastday()
+        {
+            foreach (TransportRobot robot in _Transporters.Values)
+            {
+                if (robot._loadedItems.Count != 0)
+                {
+                    robot.PrepareToShip();
+                }
+                else if (robot._order._quantity != 0)
+                {
+                    robot._path = AStarPathfinding.FindPath(robot._location, robot._pickup_point);
+                    robot._state = robot_state.pick;
+                }
+            }
+
+            foreach (PickingRobot robot in _Pickers.Values)
+            {
+                if (robot._order._quantity != 0)
+                {
+                    robot._path = AStarPathfinding.FindPath(robot._location, robot._pickup_point);
+                    robot._state = robot_state.pick;
+                }
+            }
+
+            foreach (HangingRobot robot in _Hangers.Values)
+            {
+                if (robot._order._quantity != 0)
+                {
+                    robot._path = AStarPathfinding.FindPath(robot._location, robot._pickup_point);
+                    robot._state = robot_state.pick;
                 }
             }
         }

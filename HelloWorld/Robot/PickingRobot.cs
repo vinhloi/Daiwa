@@ -75,6 +75,14 @@ namespace Daiwa
             }
         }
 
+        public override void PrepareToReturn()
+        {
+            if (_state != robot_state.returning && _state != robot_state.free && _pickingTime == 0)
+            {
+                _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                _state = robot_state.returning;
+            }
+        }
 
         protected void Pick(int sec)
         {
@@ -101,6 +109,7 @@ namespace Daiwa
             }
             else // finish picking
             {
+                _pickingTime = 0;
                 transporter._loadedItems.Enqueue(_order._productID);
                 _order._quantity--;
                 _order._rack.RemoveItem(_order._productID);
@@ -114,7 +123,6 @@ namespace Daiwa
                     transporter.PrepareToShip();
                     PrepareToReturn();
                 }
-                _pickingTime = 0;
             }
         }
 

@@ -119,7 +119,7 @@ namespace Daiwa
 
         public void PrepareToShip()
         {
-            Product product = new Product(Warehouse._DicItems[_order._productID]);
+            Product product = new Product(Warehouse._DicItems[_loadedItems.Peek()]);
             ShippingRobot shipper = (ShippingRobot)Warehouse._Shippers[product._shipperID];
             _ship_point = shipper.GetShipPoint();
 
@@ -127,7 +127,15 @@ namespace Daiwa
             _state = robot_state.ship;
         }
 
-      
+        public override void PrepareToReturn()
+        {
+            if (_state != robot_state.returning && _state != robot_state.free && _path.Count != 0)
+            {
+                _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                _state = robot_state.returning;
+            }
+        }
+
         public bool IsFull()
         {
             return (_loadedItems.Count >= _maxItem) ? true : false;

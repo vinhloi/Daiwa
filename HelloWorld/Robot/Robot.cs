@@ -178,8 +178,6 @@ namespace Daiwa
                 _path = AStarPathfinding.FindPath(_location, _chargingPoint);
                 _state = robot_state.returning;
             }
-
-           
         }
 
         public virtual bool Reroute()
