@@ -10,6 +10,8 @@ namespace Daiwa
         public const int _maxItem = 5;
         public Queue<string> _loadedItems;
         public Point _ship_point;
+        public bool _isPicking = false;
+        public bool _isShipping = false;
 
         public TransportRobot(int x, int y, Byte id) : base(x, y, id)
         {
@@ -35,13 +37,26 @@ namespace Daiwa
             }          
             else if (_path.Count > 0) // moving
             {
-                Point new_location = _path.Peek();
-                if (Warehouse.ValueAt(new_location) == 0) // new location is clear
+                Byte robot_id = Warehouse.ValueAt(_path.Peek());
+                if (robot_id == 0) // No robot standing at this tile, road is clear
                 {
                     MoveToNextTile();
                 }
                 else // new location is obstructed
                 {
+                    Robot another_robot = Warehouse._AllMovingRobots[robot_id];
+                    if (another_robot._path.Count == 0)// anther robot is stopping
+                    {
+                        Reroute();
+                    }
+                    else // anther robot is moving
+                    {
+                        if (IsFacing(another_robot))
+                        {
+                            if (another_robot.Reroute() == false)
+                                this.Reroute();
+                        }
+                    }
                     _actionString += " n";//vinh: should check if 2 robot facing each other
                 }
             }
@@ -129,11 +144,50 @@ namespace Daiwa
 
         public override void PrepareToReturn()
         {
-            if (_state != robot_state.returning && _state != robot_state.free && _path.Count != 0)
+            if (_state != robot_state.returning && _state != robot_state.free && _isPicking == false && _isShipping == false)
             {
                 _path = AStarPathfinding.FindPath(_location, _chargingPoint);
                 _state = robot_state.returning;
             }
+        }
+
+        public void StartShipping()
+        {
+            _isShipping = true;
+        }
+
+        public void FinishShipping()
+        {
+            _loadedItems.Dequeue();
+            _isShipping = false;
+            if (_loadedItems.Count == 0)
+            {
+                if (_order._quantity == 0)
+                    PrepareToReturn();
+                else
+                {
+                    _state = robot_state.pick;
+                    FindNewRouteToPick();
+                }
+            }
+        }
+
+        public void StartPicking()
+        {
+            _isPicking = true;
+        }
+
+        public void FinishPicking()
+        {
+            _isPicking = false;
+            _loadedItems.Enqueue(_order._productID);
+            _order._quantity--;
+
+            if (IsFull())
+            {
+                PrepareToShip();
+            }
+
         }
 
         public bool IsFull()

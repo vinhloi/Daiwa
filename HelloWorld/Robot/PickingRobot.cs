@@ -104,20 +104,16 @@ namespace Daiwa
                     }
 
                     _actionString = _actionString + " p " + transporter._id + " " + _order._rack.GetXXYYDH() + " " + _order._productID;
+                    transporter.StartPicking();
                 }
                 _pickingTime++;
             }
             else // finish picking
             {
                 _pickingTime = 0;
-                transporter._loadedItems.Enqueue(_order._productID);
                 _order._quantity--;
                 _order._rack.RemoveItem(_order._productID);
-                if (transporter.IsFull())
-                {
-                    transporter.PrepareToShip();
-                }
-
+                transporter.FinishPicking();
                 if (_order._quantity == 0)
                 {
                     transporter.PrepareToShip();

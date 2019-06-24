@@ -58,22 +58,13 @@ namespace Daiwa
                     }
 
                     _actionString = _actionString + " s " + transporter._id + " " + transporter._loadedItems.Peek();
+                    transporter.StartShipping();
                 }
                 _shippingTime++;
             }
             else
             {
-                transporter._loadedItems.Dequeue();
-                if (transporter._loadedItems.Count == 0)
-                {
-                    if(transporter._order._quantity == 0)
-                        transporter.PrepareToReturn();
-                    else
-                    {
-                        transporter._state = robot_state.pick;
-                        transporter.FindNewRouteToPick();
-                    }
-                }
+                transporter.FinishShipping();
                 _shippingTime = 0;
             }
         }
