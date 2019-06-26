@@ -9,13 +9,16 @@ namespace Daiwa
     {
         public const int _maxItem = 5;
         public Queue<string> _loadedItems;
+        public Queue<string> _expectedReceiveItems;
         public Point _ship_point;
+        public Point _receive_point;
         public bool _isPicking = false;
         public bool _isShipping = false;
 
         public TransportRobot(int x, int y, Byte id) : base(x, y, id)
         {
             _loadedItems = new Queue<string>();
+            _expectedReceiveItems = new Queue<string>();
         }
 
         public override void GenerateAction(int sec)
@@ -140,6 +143,25 @@ namespace Daiwa
 
             _path = AStarPathfinding.FindPath(_location, _ship_point);
             _state = robot_state.ship;
+        }
+
+        public void UpdateExpectedReceiveItem(Order order)
+        {
+            for (int i = _expectedReceiveItems.Count; i < TransportRobot._maxItem; i++)
+            {
+                if (order._quantity == 0)
+                    break;
+
+                _expectedReceiveItems.Enqueue(order._productID);
+                order._quantity--;
+            }
+        }
+
+        public void PrepareToReceive()
+        {
+            _receive_point = Warehouse._Receiver.GetReceivePoint(); ;
+            _path = AStarPathfinding.FindPath(_location, _receive_point);
+            _state = robot_state.receive;
         }
 
         public override void PrepareToReturn()

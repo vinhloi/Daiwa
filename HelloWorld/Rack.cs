@@ -28,7 +28,7 @@ namespace Daiwa
         public List<RackItem> _itemList;
         public int _shipperID;
         public int _num_items;
-        public int _max_storage;
+        public int _max_item;
 
         public int _expectedPickQuantity;
 
@@ -40,7 +40,7 @@ namespace Daiwa
             _itemList = new List<RackItem>();
             _shipperID = -1;
             _num_items = 0;
-            _max_storage = int.MaxValue;
+            _max_item = int.MaxValue;
             _expectedPickQuantity = 0;
             _expectedSlotQuantity = 0;
         }
@@ -105,7 +105,7 @@ namespace Daiwa
 
         public bool IsFull()
         {
-            return (_num_items >= _max_storage) ? true : false;
+            return (_num_items + _expectedSlotQuantity >= _max_item) ? true : false;
         }
 
         public bool isEmpty()
@@ -139,7 +139,7 @@ namespace Daiwa
 
         public override void SetMaxStorage(MaxStorage max_storage)
         {
-            _max_storage = max_storage._maxFoldStorage;
+            _max_item = max_storage._maxFoldStorage;
         }
     }
 
@@ -155,7 +155,7 @@ namespace Daiwa
 
         public override void SetMaxStorage(MaxStorage max_storage)
         {
-            _max_storage = max_storage._maxHangerStorage;
+            _max_item = max_storage._maxHangerStorage;
         }
     }
 }

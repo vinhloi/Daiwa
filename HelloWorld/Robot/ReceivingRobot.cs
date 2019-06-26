@@ -7,10 +7,23 @@ namespace Daiwa
 {
     public class ReceivingRobot : Robot
     {
-        public int _shipperID;
+        private int _random;
+        private List<Point> _receivePoints;
+        private int _receivingTime;
+        private TransportRobot transporter;
+
         public ReceivingRobot(int x, int y, Byte id) : base(x, y, id)
         {
-            _shipperID = id;
+            _random = 0;
+            _receivingTime = 0;
+
+            _receivePoints = new List<Point>()
+            {
+                new Point ( _location.X - 1, _location.Y ),
+                new Point ( _location.X + 1, _location.Y ),
+                new Point ( _location.X, _location.Y - 1 ),
+                new Point ( _location.X, _location.Y + 1 ),
+            };
         }
 
         public override void GenerateAction(int sec)
@@ -24,6 +37,12 @@ namespace Daiwa
             {
                 _actionString += " n";
             }
+        }
+
+        public Point GetReceivePoint()
+        {
+            _random = (_random + 1) % 4;
+            return _receivePoints[_random];
         }
 
         public override void PrepareToReturn()

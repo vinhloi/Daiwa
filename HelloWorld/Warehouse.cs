@@ -239,10 +239,10 @@ namespace Daiwa
                     }
 
                     int stored_quantity = 0;
-                    if ((rack._num_items + input_quantity) <= rack._max_storage)
+                    if ((rack._num_items + input_quantity) <= rack._max_item)
                         stored_quantity = input_quantity;
                     else
-                        stored_quantity = rack._max_storage - rack._num_items;
+                        stored_quantity = rack._max_item - rack._num_items;
 
                     rack._itemList.Add(new RackItem(product_id, stored_quantity));
                     rack._num_items += stored_quantity;
@@ -286,7 +286,7 @@ namespace Daiwa
                         (rack._shipperID == product_info._shipperID))
                     {
                         result.Add(rack);
-                        quantity -= (rack._max_storage - rack._num_items);
+                        quantity -= (rack._max_item - rack._num_items);
                     }
                 }
 
@@ -325,7 +325,7 @@ namespace Daiwa
                         (rack._shipperID == product_info._shipperID))
                     {
                         result.Add(rack);
-                        quantity -= (rack._max_storage - rack._num_items);
+                        quantity -= (rack._max_item - rack._num_items);
                     }
                 }
 
@@ -488,13 +488,6 @@ namespace Daiwa
                         _PickOrders.RemoveAt(i);
                 }
             }
-            else
-            {
-                foreach (Robot robot in _AllMovingRobots.Values)
-                {
-                    robot.PrepareToReturn();
-                }
-            }
         }
 
         private static void ResumeActivityLastday()
@@ -554,60 +547,14 @@ namespace Daiwa
                 Point pickup_point = rack.GetPickUpPoint();
 
                 // Find picking robot which is free and near rack
-                Robot picker = FindRobotToPick(rack);
+                Robot picker = FindPickerToPick(rack);
                 if (picker == null) // All pickers are busy
                 {
                     //Program.Print("All pickers are busy");
                     return false;
                 }
 
-                TransportRobot transporter = FindRobotToTransport(rack);
-                if (transporter == null) // All transporters are busy
-                {
-                    //Program.Print("All transporters are busy");
-                    return false;
-                }
-
-                picker.PrepareToPick(pickup_point, rack, order._productID, rack._expectedPickQuantity);
-                transporter.PrepareToPick(pickup_point, rack, order._productID, rack._expectedPickQuantity);
-                Program.Print("Handle pick " + order._productID + " " + order._quantity);
-            }
-
-            return true;
-        }
-
-        private bool HandleSlotOrder(Order order)
-        {
-            Product product = new Product((string)_DicItems[order._productID]);
-            if (product == null)
-            {
-                Program.Print("Can not find product info");
-                return true;
-            }
-
-            MaxStorage max_storage_info = new MaxStorage((string)_DicMaxStorage[product._productType]);
-            if (max_storage_info == null)
-            {
-                Program.Print("Can not find max storage");
-                return true;
-            }
-
-            List<Rack> suitable_racks = FindRackToStore(product, order._quantity, max_storage_info);
-
-            foreach (Rack rack in suitable_racks)
-            {
-                // Get the pickup point of rack
-                Point pickup_point = rack.GetPickUpPoint();
-
-                // Find picking robot which is free and near rack
-                Robot picker = FindRobotToPick(rack);
-                if (picker == null) // All pickers are busy
-                {
-                    //Program.Print("All pickers are busy");
-                    return false;
-                }
-
-                TransportRobot transporter = FindRobotToTransport(rack);
+                TransportRobot transporter = FindTransporterToPick(rack._location);
                 if (transporter == null) // All transporters are busy
                 {
                     //Program.Print("All transporters are busy");
@@ -648,7 +595,107 @@ namespace Daiwa
             return result;
         }
 
-        private Robot FindRobotToPick(Rack rack)
+        private List<Rack> FindRackToSlot(Product product_info, int quantity, MaxStorage max_storage_info)
+        {
+            List<Rack> result = new List<Rack>();
+
+            if (product_info._storageType.Equals("fold"))
+            {
+                int max_storage = max_storage_info._maxFoldStorage;
+                while (quantity >= max_storage)
+                {
+                    if (_generalEmptyRacksQueue.Count > 0)
+                    {
+                        Rack rack = _generalEmptyRacksQueue.Dequeue();
+                        rack._expectedSlotQuantity = max_storage;
+                        result.Add(rack);
+                        quantity -= max_storage;
+                    }
+                }
+
+                // Find empty spot in the racks which contain product
+                foreach (GeneralPurposeRack rack in _generalRackList)
+                {
+                    if (quantity <= 0) //Get enough rack to store product.
+                        break;
+
+                    // Find rack with the same product type and the same shipper. 
+                    if (rack.IsFull() == false &&
+                        rack._productType.Equals(product_info._productType) &&
+                        (rack._shipperID == product_info._shipperID))
+                    {
+                        int empty_storage = rack._max_item - rack._num_items;
+                        rack._expectedSlotQuantity = (quantity  < empty_storage) ? quantity : empty_storage;
+                        result.Add(rack);
+                        quantity -= rack._expectedSlotQuantity;
+                    }
+                }
+
+                if (quantity > 0) //If still not enough empty spot, get one from the empty racks
+                {
+                    if (_generalEmptyRacksQueue.Count > 0)
+                    {
+                        Rack rack = _generalEmptyRacksQueue.Dequeue();
+                        rack._expectedSlotQuantity = max_storage;
+                        result.Add(rack);
+                        quantity -= max_storage;
+                    }
+                    else
+                    {
+                        Program.Print("Can't find rack to store item");
+                    }
+                }
+            }
+            else
+            {
+                int max_storage = max_storage_info._maxHangerStorage;
+                while (quantity >= max_storage)
+                {
+                    if (_hangerEmptyRackQueue.Count > 0)
+                    {
+                        Rack rack = _generalEmptyRacksQueue.Dequeue();
+                        rack._expectedSlotQuantity = max_storage;
+                        result.Add(rack);
+                        quantity -= max_storage;
+                    }
+                }
+
+                foreach (HangerRack rack in _hangerRackList)
+                {
+                    if (quantity <= 0) //Get enough rack to store product.
+                        break;
+
+                    // Find rack with the same shipper. 
+                    if (rack.IsFull() == false &&
+                        (rack._shipperID == product_info._shipperID))
+                    {
+                        int empty_storage = rack._max_item - rack._num_items;
+                        rack._expectedSlotQuantity = (quantity < empty_storage) ? quantity : empty_storage;
+                        result.Add(rack);
+                        quantity -= rack._expectedSlotQuantity;
+                    }
+                }
+
+                if (quantity > 0) //If still not enough rack, get one from the empty racks
+                {
+                    if (_hangerEmptyRackQueue.Count > 0)
+                    {
+                        Rack rack = _hangerEmptyRackQueue.Dequeue();
+                        rack._expectedSlotQuantity = max_storage;
+                        result.Add(rack);
+                        quantity -= max_storage;
+                    }
+                    else
+                    {
+                        Program.Print("Can't find rack to store item");
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private Robot FindPickerToPick(Rack rack)
         {
             Robot select_robot = null;
             int current_distance = 0;
@@ -671,15 +718,16 @@ namespace Daiwa
             return select_robot;
         }
 
-        private TransportRobot FindRobotToTransport(Rack rack)
+        private TransportRobot FindTransporterToPick(Point location)
         {
             TransportRobot select_robot = null;
             int current_distance = 0;
             foreach (TransportRobot robot in _Transporters.Values)
             {
-                int new_distance = AStarPathfinding.ComputeHScore(robot._location.X, robot._location.Y, rack._location.X, rack._location.Y);
                 if (robot._state == robot_state.free || robot._state == robot_state.returning)
                 {
+                    int new_distance = AStarPathfinding.ComputeHScore(robot._location.X, robot._location.Y, location.X, location.Y);
+
                     if (select_robot == null || new_distance < current_distance)
                     {
                         select_robot = robot;
@@ -695,7 +743,7 @@ namespace Daiwa
         {
             for (int i = 1; i < input.Count; i += 2) // Add new order into the list
             {
-                _SlotOrders.Insert(0, new Order(input[i], int.Parse(input[i + 1])));
+                _SlotOrders.Add(new Order(input[i], int.Parse(input[i + 1])));
             }
 
             if (_time == 0 && _day != 0) // resume the activity of previous day
@@ -705,13 +753,27 @@ namespace Daiwa
 
             if (_time < 714)
             {
-                // Start solving order from the list, including the old orders
-                for (int i = _PickOrders.Count - 1; i >= 0; i--)
+                while(_SlotOrders.Count > 0)
                 {
-                    if (HandleSlotOrder(_PickOrders[i]) == false)
+                    TransportRobot transporter = FindTransporterToPick(_Receiver._location);
+                    if (transporter == null) // All transporters are busy
+                    {
                         return;
-                    else
-                        _PickOrders.RemoveAt(i);
+                    }
+
+                    while(transporter._expectedReceiveItems.Count < TransportRobot._maxItem)
+                    {
+                        Order order = FindNextSlotOrder(transporter);
+                        if (order == null)
+                            break;
+                        transporter.UpdateExpectedReceiveItem(order);
+                        if(order._quantity == 0)
+                        {
+                            _SlotOrders.Remove(order);
+                        }
+                    }
+
+                    transporter.PrepareToReceive();
                 }
             }
             else
@@ -721,6 +783,40 @@ namespace Daiwa
                     robot.PrepareToReturn();
                 }
             }
+        }
+
+        public Order FindNextSlotOrder(TransportRobot robot)
+        {
+            if (_SlotOrders.Count == 0)
+                return null;
+
+            if(robot._expectedReceiveItems.Count == 0)
+            {
+                return _SlotOrders[0];
+            }
+
+            string product_id = robot._expectedReceiveItems.Peek();
+            Product product_info = new Product(_DicItems[product_id]);
+            if(product_info._storageType.Equals("fold"))
+            {
+                foreach(Order order in _SlotOrders)
+                {
+                    Product product_info_1 = new Product(_DicItems[order._productID]);
+                    if (product_info_1._productType.Equals(product_info._productType) &&
+                        product_info_1._shipperID == product_info._shipperID)
+                        return order;
+                }
+            }
+            else
+            {
+                foreach (Order order in _SlotOrders)
+                {
+                    Product product_info_1 = new Product(_DicItems[order._productID]);
+                    if (product_info_1._shipperID == product_info._shipperID)
+                        return order;
+                }
+            }
+            return null;
         }
 
         public void GenerateAction()
