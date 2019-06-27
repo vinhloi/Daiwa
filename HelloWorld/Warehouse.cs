@@ -348,85 +348,75 @@ namespace Daiwa
 
         public void SpecifyRobotInitialPosition()
         {
-
             Byte id = 10;
 
-            _Transporters.Add(id, new TransportRobot(81, 13, id++));
-            _Pickers.Add(id, new PickingRobot(82, 13, id++));
-            _Hangers.Add(id, new HangingRobot(83, 13, id++));
-            //// Init transporter
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    _DicTransporter.Add(id, new TransportRobot((50 + i), 11, id++));
-            //}
+            //_Transporters.Add(id, new TransportRobot(81, 13, id++));
+            //_Pickers.Add(id, new PickingRobot(82, 13, id++));
+            //_Hangers.Add(id, new HangingRobot(83, 13, id++));
+            
+            // Init 30 transporters
+            for (int i = 0; i < 10; i++)
+            {
+                _Transporters.Add(id, new TransportRobot(77, 2 + i, id++));
+                _Transporters.Add(id, new TransportRobot(79, 2 + i, id++));
+                _Transporters.Add(id, new TransportRobot(81, 2 + i, id++));
+            }
 
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    _DicTransporter.Add(id, new TransportRobot((62 + i), 11, id++));
-            //}
+            // Init 33 Pickers
+            _Pickers.Add(id, new PickingRobot(18, 26, id++));
+            _Pickers.Add(id, new PickingRobot(18, 30, id++));
+            _Pickers.Add(id, new PickingRobot(18, 36, id++));
+            _Pickers.Add(id, new PickingRobot(18, 40, id++));
+            _Pickers.Add(id, new PickingRobot(18, 44, id++));
+            _Pickers.Add(id, new PickingRobot(47, 26, id++));
+            _Pickers.Add(id, new PickingRobot(47, 30, id++));
+            _Pickers.Add(id, new PickingRobot(47, 36, id++));
+            _Pickers.Add(id, new PickingRobot(47, 40, id++));
+            _Pickers.Add(id, new PickingRobot(47, 44, id++));
 
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    _DicTransporter.Add(id, new TransportRobot(79, 2 + i, id++));
-            //    _DicTransporter.Add(id, new TransportRobot(80, 2 + i, id++));
-            //}
+            for (int i = 0; i < 16; i++)
+            {
+                _Pickers.Add(id, new PickingRobot((84 + i * 4), 13, id++));
+            }
 
-            //// Init Picker robots
-            //_DicPicker.Add(id, new PickingRobot(18, 26, id++));
-            //_DicPicker.Add(id, new PickingRobot(18, 30, id++));
-            //_DicPicker.Add(id, new PickingRobot(18, 36, id++));
-            //_DicPicker.Add(id, new PickingRobot(18, 40, id++));
-            //_DicPicker.Add(id, new PickingRobot(18, 44, id++));
-
-            //_DicPicker.Add(id, new PickingRobot(47, 26, id++));
-            //_DicPicker.Add(id, new PickingRobot(47, 30, id++));
-            //_DicPicker.Add(id, new PickingRobot(47, 36, id++));
-            //_DicPicker.Add(id, new PickingRobot(47, 40, id++));
-            //_DicPicker.Add(id, new PickingRobot(47, 44, id++));
-
-            //for (int i = 0; i < 16; i++)
-            //{
-            //    _DicPicker.Add(id, new PickingRobot((84 + i * 4), 13, id++));
-            //}
-
-            //for (int i = 0; i < 14; i++)
-            //{
-            //    _DicPicker.Add(id, new PickingRobot(155, (50 + i * 4), id++));
-            //}
+            for (int i = 0; i < 7; i++)
+            {
+                _Pickers.Add(id, new PickingRobot(155, (50 + i * 8), id++));
+            }
 
             //for (int i = 0; i < 9; i++)
             //{
-            //    _DicPicker.Add(id, new PickingRobot(133, (74 + i * 4), id++));
+            //    _Pickers.Add(id, new PickingRobot(133, (74 + i * 4), id++));
             //}
 
 
-            //// Init Hanger robots
-            //for (int i = 0; i < 5; i++)
-            //{
-            //    _DicHanger.Add(id, new HangerRobot(64 + i * 4, 32, id++));
-            //}
+            // Init 23 Hangers
+            for (int i = 0; i < 4; i++)
+            {
+                _Hangers.Add(id, new HangingRobot(64 + i * 4, 32, id++));
+            }
 
-            //for (int i = 0; i < 3; i++)
-            //{
-            //    _DicHanger.Add(id, new HangerRobot(86 + i * 4, 32, id++));
-            //}
+            for (int i = 0; i < 3; i++)
+            {
+                _Hangers.Add(id, new HangingRobot(86 + i * 4, 32, id++));
+            }
 
-            //for (int i = 0; i < 5; i++)
-            //{
-            //    _DicHanger.Add(id, new HangerRobot(100 + i * 4, 32, id++));
-            //}
+            for (int i = 0; i < 5; i++)
+            {
+                _Hangers.Add(id, new HangingRobot(100 + i * 4, 32, id++));
+            }
 
-            //for (int i = 0; i < 3; i++)
-            //{
-            //    _DicHanger.Add(id, new HangerRobot(122 + i * 4, 32, id++));
-            //}
+            for (int i = 0; i < 3; i++)
+            {
+                _Hangers.Add(id, new HangingRobot(122 + i * 4, 32, id++));
+            }
 
-            //for (int i = 0; i < 9; i++)
-            //{
-            //    _DicHanger.Add(id, new HangerRobot(136 + i * 4, 32, id++));
-            //}
+            for (int i = 0; i < 8; i++)
+            {
+                _Hangers.Add(id, new HangingRobot(136 + i * 4, 32, id++));
+            }
 
-            //Program.Print(_DicTransporter.Count.ToString() + " ");
+            //Program.Print(_Transporters.Count.ToString() + " ");
 
             foreach (KeyValuePair<int, Robot> entry in _Transporters)
             {
