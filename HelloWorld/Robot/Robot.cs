@@ -182,18 +182,20 @@ namespace Daiwa
 
         public virtual void PrepareToReturn()
         {
-            if(_state != robot_state.returning && _state != robot_state.free)
-            {
-                _path = AStarPathfinding.FindPath(_location, _chargingPoint);
-                _backUpState = _state;
-                _state = robot_state.returning;
-            }
+            Program.Print("Virtual method");
+        }
+
+        public virtual void ForceReturnChargingPoint()
+        {
+            Program.Print("Virtual method");
         }
 
         public virtual void ResumeActivityLastDay()
         {
             _state = _backUpState;
+            _backUpState = robot_state.free;
             _path = AStarPathfinding.FindPath(_location, _destination_point);
+            Program.Print("Resume: " + _id + " " + _backUpState + " " + _destination_point + "\n");
         }
 
         public virtual bool Reroute()

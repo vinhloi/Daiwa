@@ -556,7 +556,6 @@ namespace Daiwa
                         rack.IsEnoughSpaceToSlot(quantity))
                     {
                         result = rack;
-                        result._expectedSlotQuantity += quantity;
                         break;
                     }
                 }
@@ -576,7 +575,6 @@ namespace Daiwa
                         rack.IsEnoughSpaceToSlot(quantity))
                     {
                         result = rack;
-                        result._expectedSlotQuantity += quantity;
                     }
                 }
 
@@ -586,17 +584,22 @@ namespace Daiwa
                 }
             }
 
-            if (result != null && result.isEmpty())
+            if (result != null)
             {
-                result._shipperID = product_info._shipperID;
-                result.SetMaxStorage(max_storage_info);
-                if (result._storageType.Equals("fold"))
+                result._expectedSlotQuantity += quantity;
+
+                if(result.isEmpty())
                 {
-                    _generalRackList.Add(result);
-                    result._productType = product_info._productType;
+                    result._shipperID = product_info._shipperID;
+                    result.SetMaxStorage(max_storage_info);
+                    if (result._storageType.Equals("fold"))
+                    {
+                        _generalRackList.Add(result);
+                        result._productType = product_info._productType;
+                    }
+                    else
+                        _hangerRackList.Add(result);
                 }
-                else
-                    _hangerRackList.Add(result);
             }
 
             return result;
@@ -681,6 +684,15 @@ namespace Daiwa
                 _SlotOrders.Add(new Order(input[i], int.Parse(input[i + 1])));
             }
 
+            // Need to remove here
+            if (_time == 0 && _day != 0) // resume the activity of previous day
+            {
+                foreach (Robot robot in _AllMovingRobots.Values)
+                {
+                    robot.ResumeActivityLastDay();
+                }
+            }
+
             if (_time < 714)
             {
                 while (_SlotOrders.Count > 0)
@@ -710,7 +722,7 @@ namespace Daiwa
             {
                 foreach (Robot robot in _AllMovingRobots.Values)
                 {
-                    robot.PrepareToReturn();
+                    robot.ForceReturnChargingPoint();
                 }
             }
         }
@@ -781,7 +793,7 @@ namespace Daiwa
             foreach (Robot robot in _AllMovingRobots.Values)
             {
                 Program.WriteOutput(robot._actionString + "\n");
-                string debug = robot._actionString + " (" + (robot._location.X + 1) + "," + (robot._location.Y + 1) + ") " + robot._direction + " " + robot._state + "\n";
+                string debug = robot._actionString + " " + robot._state + " " + robot._location + "\n";
                 Program.Print(debug);
             }
         }

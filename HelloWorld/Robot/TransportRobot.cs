@@ -174,6 +174,17 @@ namespace Daiwa
             }
         }
 
+        public override void ForceReturnChargingPoint()
+        {
+            if (_state != robot_state.returning && _state != robot_state.free && _isLoading == false && _isUnloading == false)
+            {
+                Program.Print("Forceb " + _id + " " + _state + " " + _destination_point + "\n");
+                _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                _backUpState = _state;
+                _state = robot_state.returning;
+            }
+        }
+
         public void FinishReceiving()
         {
             string item = _expectedReceiveItems.Dequeue();
@@ -188,7 +199,7 @@ namespace Daiwa
                     return;
                 }
 
-                Program.Print(rack.GetXXYYDH() + " " + rack._num_items + " " + rack._expectedSlotQuantity + " " + rack._max_item + "\n");
+                //Program.Print(rack.GetXXYYDH() + " " + rack._num_items + " " + rack._expectedSlotQuantity + " " + rack._max_item + "\n");
 
                 PrepareToSlot(rack.GetPickUpPoint(), rack, _loadedItems.Count);
 

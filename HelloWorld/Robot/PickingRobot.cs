@@ -52,7 +52,7 @@ namespace Daiwa
                                 this.Reroute();
                         }
                     }
-                        
+
                     _actionString += " n";
                 }
             }
@@ -82,6 +82,17 @@ namespace Daiwa
             if (_state != robot_state.returning && _state != robot_state.free && _pickingTime == 0)
             {
                 _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                _state = robot_state.returning;
+            }
+        }
+
+        public override void ForceReturnChargingPoint()
+        {
+            if (_state != robot_state.returning && _state != robot_state.free && _pickingTime == 0)
+            {
+                Program.Print("Forceb " + _id + " " + _state + " " + _destination_point + "\n");
+                _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                _backUpState = _state;
                 _state = robot_state.returning;
             }
         }
