@@ -551,9 +551,9 @@ namespace Daiwa
                 foreach (GeneralPurposeRack rack in _generalRackList)
                 {
                     // Find rack with the same product type and the same shipper. 
-                    if (rack.IsEnoughSpaceToSlot(quantity) &&
-                        rack._productType.Equals(product_info._productType) &&
-                        (rack._shipperID == product_info._shipperID))
+                    if (rack._productType.Equals(product_info._productType) &&
+                        (rack._shipperID == product_info._shipperID) &&
+                        rack.IsEnoughSpaceToSlot(quantity))
                     {
                         result = rack;
                         result._expectedSlotQuantity += quantity;
@@ -572,8 +572,8 @@ namespace Daiwa
                 foreach (HangerRack rack in _hangerRackList)
                 {
                     // Find rack with the same shipper. 
-                    if ((rack._num_items + quantity <= rack._max_item) &&
-                        (rack._shipperID == product_info._shipperID))
+                    if (rack._shipperID == product_info._shipperID &&
+                        rack.IsEnoughSpaceToSlot(quantity))
                     {
                         result = rack;
                         result._expectedSlotQuantity += quantity;
@@ -770,11 +770,12 @@ namespace Daiwa
             }
 
             Program.WriteOutput(_Receiver._actionString + "\n");
+            Program.Print(_Receiver._actionString + "\n");
 
             foreach (Robot robot in _Shippers.Values)
             {
                 Program.WriteOutput(robot._actionString + "\n");
-                Program.Print(robot._actionString + "\n");
+                //Program.Print(robot._actionString + "\n");
             }
 
             foreach (Robot robot in _AllMovingRobots.Values)

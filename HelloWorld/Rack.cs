@@ -139,12 +139,13 @@ namespace Daiwa
 
         public void AddItem(string product_id)
         {
+            _num_items++;
+            _expectedSlotQuantity--;
+
             RackItem obj = _itemList.FirstOrDefault(x => x._productID.Equals(product_id));
             if (obj != null)
             {
                 obj._quantity++;
-                _num_items++;
-                _expectedSlotQuantity--;
             }
             else
             {

@@ -182,6 +182,14 @@ namespace Daiwa
             if (_expectedReceiveItems.Count == 0)
             {
                 Rack rack = Warehouse.FindRackToSlot(_loadedItems.Peek(), _loadedItems.Count);
+                if(rack == null)
+                {
+                    Program.Print("Racks are full");
+                    return;
+                }
+
+                Program.Print(rack.GetXXYYDH() + " " + rack._num_items + " " + rack._expectedSlotQuantity + " " + rack._max_item + "\n");
+
                 PrepareToSlot(rack.GetPickUpPoint(), rack, _loadedItems.Count);
 
                 Robot picker = Warehouse.FindPickerToPick(rack);

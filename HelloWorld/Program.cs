@@ -95,7 +95,7 @@ namespace Daiwa
                     case "4":
                     case "5":
                     case "6":
-                        Print(input + "\n");
+                        Print("\n" + input + "\n");
                         warehouse.UpdateTime(values);
                         break;
                     default:
