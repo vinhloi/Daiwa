@@ -37,6 +37,7 @@ namespace Daiwa
         public robot_state _state;
         public Stack<Point> _path;
         public Order _order;
+        public string type;
 
         public Robot(int x, int y, Byte id)
         {

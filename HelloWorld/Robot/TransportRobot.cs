@@ -17,6 +17,7 @@ namespace Daiwa
         {
             _loadedItems = new Queue<string>();
             _expectedReceiveItems = new Queue<string>();
+            type = "trans";
         }
 
         public override void GenerateAction(int sec)

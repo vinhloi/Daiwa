@@ -783,8 +783,11 @@ namespace Daiwa
             foreach (Robot robot in _AllMovingRobots.Values)
             {
                 Program.WriteOutput(robot._actionString + "\n");
-                string debug = robot._actionString + " " + robot._state + " " + robot._location + "\n";
-                Program.Print(debug);
+                if(robot._state != robot_state.free)
+                {
+                    string debug = robot._actionString + " " + robot.type + " " + robot._state + " " + robot._location + " to " + robot._destination_point + "\n";
+                    Program.Print(debug);
+                }
             }
         }
 

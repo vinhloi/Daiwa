@@ -16,6 +16,7 @@ namespace Daiwa
         {
             _random = 0;
             _receivingTime = 0;
+            type = "receiver";
 
             _receivePoints = new List<Point>()
             {

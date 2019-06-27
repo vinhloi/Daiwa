@@ -9,6 +9,7 @@ namespace Daiwa
     {
         public HangingRobot(int x, int y, Byte id) : base(x, y, id)
         {
+            type = "hanger";
         }
     }
 }

@@ -14,6 +14,7 @@ namespace Daiwa
         {
             _pickingTime = 0;
             transporter = null;
+            type = "picker";
         }
 
         public override void GenerateAction(int sec)

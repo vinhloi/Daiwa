@@ -17,6 +17,7 @@ namespace Daiwa
         {
             _random = 0;
             _shippingTime = 0;
+            type = "shipper";
 
             _shipPoints = new List<Point>()
             {
