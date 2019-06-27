@@ -33,10 +33,51 @@ namespace Daiwa
                 _actionString = "0";
             }
 
-            if (_state == robot_state.free)
+            if (_receivingTime < 4)
             {
-                _actionString += " n";
+                if (_receivingTime == 0)
+                {
+                    if (sec + 5 > 59)
+                    {
+                        _actionString += " n";
+                        return;
+                    }
+
+                    transporter = GetAdjacentTransporter(); // Find a transporter
+                    if (transporter == null)
+                    {
+                        _actionString += " n"; // Can't find transporter, return
+                        return;
+                    }
+
+                    _actionString = _actionString + " p " + transporter._id + " " + transporter._expectedReceiveItems.Peek();
+                    transporter._isLoading = true;
+                }
+                _receivingTime++;
             }
+            else
+            {
+                transporter.FinishReceiving();
+                _receivingTime = 0;
+            }
+        }
+
+        private TransportRobot GetAdjacentTransporter()
+        {
+            foreach (Point location in _receivePoints)
+            {
+                Byte id = Warehouse.ValueAt(location);
+                if (id > 9 && Warehouse._Transporters.ContainsKey(id))
+                {
+                    TransportRobot robot = (TransportRobot)Warehouse._Transporters[id];
+                    if (robot._state == robot_state.receive
+                        && robot._expectedReceiveItems.Count > 0
+                        && robot._path.Count == 0)
+                        return robot;
+                }
+            }
+
+            return null;
         }
 
         public Point GetReceivePoint()

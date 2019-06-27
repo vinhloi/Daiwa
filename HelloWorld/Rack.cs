@@ -31,7 +31,6 @@ namespace Daiwa
         public int _max_item;
 
         public int _expectedPickQuantity;
-
         public int _expectedSlotQuantity;
 
         public Rack(int x, int y)
@@ -108,6 +107,18 @@ namespace Daiwa
             return (_num_items + _expectedSlotQuantity >= _max_item) ? true : false;
         }
 
+        public bool IsEnoughSpaceToSlot(int quantity)
+        {
+            if(_num_items + _expectedSlotQuantity + quantity <= _max_item)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public bool isEmpty()
         {
             return (_num_items == 0) ? true : false;
@@ -123,6 +134,21 @@ namespace Daiwa
                 _expectedPickQuantity--;
                 if (obj._quantity == 0)
                     _itemList.Remove(obj);
+            }
+        }
+
+        public void AddItem(string product_id)
+        {
+            RackItem obj = _itemList.FirstOrDefault(x => x._productID.Equals(product_id));
+            if (obj != null)
+            {
+                obj._quantity++;
+                _num_items++;
+                _expectedSlotQuantity--;
+            }
+            else
+            {
+                _itemList.Add(new RackItem(product_id, 1));
             }
         }
     }

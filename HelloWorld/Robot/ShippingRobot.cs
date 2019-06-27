@@ -35,11 +35,6 @@ namespace Daiwa
                 _actionString = (_id - 5).ToString(); // Trick: Because we set id = {6 7 8 9} to avoid 0 and 1 
             }
 
-            Ship(sec);
-        }
-
-        private void Ship(int sec)
-        {
             if (_shippingTime < 4)
             {
                 if (_shippingTime == 0)
@@ -58,7 +53,7 @@ namespace Daiwa
                     }
 
                     _actionString = _actionString + " s " + transporter._id + " " + transporter._loadedItems.Peek();
-                    transporter.StartShipping();
+                    transporter._isUnloading = true;
                 }
                 _shippingTime++;
             }

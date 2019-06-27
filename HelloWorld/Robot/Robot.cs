@@ -8,7 +8,7 @@ namespace Daiwa
     public enum robot_state
     {
         free = 0,
-        store = 1,
+        slot = 1,
         pick = 2,
         ship = 3,
         receive = 4,
@@ -30,11 +30,12 @@ namespace Daiwa
         public Byte _id;
         public Point _location;
         public Point _chargingPoint;
+        public Point _destination_point;
         public Direction _direction;
         public string _actionString;  // List of action in 60 seconds
+        public robot_state _backUpState;
         public robot_state _state;
         public Stack<Point> _path;
-        public Point _pickup_point;
         public Order _order;
 
         public Robot(int x, int y, Byte id)
@@ -46,6 +47,7 @@ namespace Daiwa
             _chargingPoint.Y = y;
             _direction = Direction.Up;
             _actionString = "";
+            _backUpState = robot_state.free;
             _state = robot_state.free;
             _path = new Stack<Point>();
             Warehouse.Map[y, x] = id;
@@ -165,7 +167,17 @@ namespace Daiwa
             _order._rack = rack;
             _order._productID = product_id;
             _order._quantity = quantity;
-            _pickup_point = pickup_point;
+            _destination_point = pickup_point;
+        }
+
+        public virtual void PrepareToSlot(Point pickup_point, Rack rack, int quantity)
+        {
+            _path = AStarPathfinding.FindPath(_location, pickup_point);
+            _state = robot_state.slot;
+
+            _order._rack = rack;
+            _order._quantity = quantity;
+            _destination_point = pickup_point;
         }
 
         public virtual void PrepareToReturn()
@@ -173,8 +185,15 @@ namespace Daiwa
             if(_state != robot_state.returning && _state != robot_state.free)
             {
                 _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                _backUpState = _state;
                 _state = robot_state.returning;
             }
+        }
+
+        public virtual void ResumeActivityLastDay()
+        {
+            _state = _backUpState;
+            _path = AStarPathfinding.FindPath(_location, _destination_point);
         }
 
         public virtual bool Reroute()

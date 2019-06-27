@@ -9,13 +9,11 @@ namespace Daiwa
     {
         protected int _pickingTime;
         protected TransportRobot transporter;
-        protected string type;
 
         public PickingRobot(int x, int y, Byte id) : base(x, y, id)
         {
             _pickingTime = 0;
             transporter = null;
-            type = "picking";
         }
 
         public override void GenerateAction(int sec)
@@ -46,7 +44,7 @@ namespace Daiwa
                         else
                             this.Reroute();
                     }
-                    else // anther robot is moving
+                    else // another robot is moving
                     {
                         if (IsFacing(another_robot))
                         {
@@ -71,6 +69,10 @@ namespace Daiwa
                 else if (_state == robot_state.pick && _order._quantity > 0)
                 {
                     Pick(sec);
+                }
+                else if (_state == robot_state.slot && _order._quantity > 0)
+                {
+                    Slot(sec);
                 }
             }
         }
@@ -104,7 +106,7 @@ namespace Daiwa
                     }
 
                     _actionString = _actionString + " p " + transporter._id + " " + _order._rack.GetXXYYDH() + " " + _order._productID;
-                    transporter.StartPicking();
+                    transporter._isLoading = true;
                 }
                 _pickingTime++;
             }
@@ -117,6 +119,43 @@ namespace Daiwa
                 if (_order._quantity == 0)
                 {
                     transporter.PrepareToShip();
+                    PrepareToReturn();
+                }
+            }
+        }
+
+        protected void Slot(int sec)
+        {
+            if (_pickingTime < 9)
+            {
+                if (_pickingTime == 0) // start picking
+                {
+                    if (sec + 10 > 59)
+                    {
+                        _actionString += " n";
+                        return;
+                    }
+
+                    transporter = GetAdjacentTransporter();
+                    if (transporter == null)
+                    {
+                        _actionString += " n";
+                        return;
+                    }
+
+                    _actionString = _actionString + " s " + transporter._id + " " + _order._rack.GetXXYYDH() + " " + transporter._loadedItems.Peek();
+                    transporter._isUnloading = true;
+                }
+                _pickingTime++;
+            }
+            else // finish slot
+            {
+                _pickingTime = 0;
+                _order._quantity--;
+                _order._rack.AddItem(_order._productID);
+                transporter.FinishSlotting();
+                if (_order._quantity == 0)
+                {
                     PrepareToReturn();
                 }
             }
@@ -141,9 +180,7 @@ namespace Daiwa
                 if (id > 9 && Warehouse._Transporters.ContainsKey(id))
                 {
                     TransportRobot robot = (TransportRobot)Warehouse._Transporters[id];
-                    if (robot._order._productID.Equals(this._order._productID)
-                        && robot._state == robot_state.pick
-                        && robot.IsFull() == false)
+                    if (robot._path.Count == 0 && robot._state == this._state)
                         return robot;
                 }
             }
@@ -156,9 +193,10 @@ namespace Daiwa
             switch (_state)
             {
                 case robot_state.pick:
+                case robot_state.slot:
                     if (_path.Count == 0)
                         return false;
-                    _path = AStarPathfinding.FindPath(_location, _pickup_point);
+                    _path = AStarPathfinding.FindPath(_location, _destination_point);
                     return true;
                 case robot_state.returning:
                     if (_path.Count == 0)

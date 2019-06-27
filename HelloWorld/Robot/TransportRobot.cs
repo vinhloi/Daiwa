@@ -10,10 +10,8 @@ namespace Daiwa
         public const int _maxItem = 5;
         public Queue<string> _loadedItems;
         public Queue<string> _expectedReceiveItems;
-        public Point _ship_point;
-        public Point _receive_point;
-        public bool _isPicking = false;
-        public bool _isShipping = false;
+        public bool _isLoading = false;
+        public bool _isUnloading = false;
 
         public TransportRobot(int x, int y, Byte id) : base(x, y, id)
         {
@@ -28,8 +26,10 @@ namespace Daiwa
                 _actionString = _id.ToString(); // add id at sec 0
             }
 
-            // The last point is the pickup point, we need to stop adjacent to it
-            if (_path.Count == 1 && _state == robot_state.pick && _path.Peek().Equals(_pickup_point))
+            // when picking, stop 1 tile before the pickup point
+            if (_path.Count == 1 && 
+                _path.Peek().Equals(_destination_point)
+                && (_state == robot_state.pick || _state == robot_state.slot))
             {
                 _path.Pop();
             }
@@ -85,6 +85,7 @@ namespace Daiwa
             switch(_state)
             {
                 case robot_state.pick:
+                case robot_state.slot:
                     return FindNewRouteToPick();
                 case robot_state.ship:
                     if (_path.Count == 0)
@@ -93,7 +94,7 @@ namespace Daiwa
                     }
                     else
                     {
-                        _path = AStarPathfinding.FindPath(_location, _ship_point);
+                        _path = AStarPathfinding.FindPath(_location, _destination_point);
                         return true;
                     }
                 case robot_state.returning:
@@ -113,8 +114,8 @@ namespace Daiwa
 
         public bool FindNewRouteToPick()
         {
-            int x = _pickup_point.X;
-            int y = _pickup_point.Y;
+            int x = _destination_point.X;
+            int y = _destination_point.Y;
 
             var proposedLocations = new List<Point>()
             {
@@ -139,9 +140,9 @@ namespace Daiwa
         {
             Product product = new Product(Warehouse._DicItems[_loadedItems.Peek()]);
             ShippingRobot shipper = (ShippingRobot)Warehouse._Shippers[product._shipperID];
-            _ship_point = shipper.GetShipPoint();
+            _destination_point = shipper.GetShipPoint();
 
-            _path = AStarPathfinding.FindPath(_location, _ship_point);
+            _path = AStarPathfinding.FindPath(_location, _destination_point);
             _state = robot_state.ship;
         }
 
@@ -159,55 +160,78 @@ namespace Daiwa
 
         public void PrepareToReceive()
         {
-            _receive_point = Warehouse._Receiver.GetReceivePoint(); ;
-            _path = AStarPathfinding.FindPath(_location, _receive_point);
+            _destination_point = Warehouse._Receiver.GetReceivePoint(); ;
+            _path = AStarPathfinding.FindPath(_location, _destination_point);
             _state = robot_state.receive;
         }
 
         public override void PrepareToReturn()
         {
-            if (_state != robot_state.returning && _state != robot_state.free && _isPicking == false && _isShipping == false)
+            if (_state != robot_state.returning && _state != robot_state.free && _isLoading == false && _isUnloading == false)
             {
                 _path = AStarPathfinding.FindPath(_location, _chargingPoint);
                 _state = robot_state.returning;
             }
         }
 
-        public void StartShipping()
+        public void FinishReceiving()
         {
-            _isShipping = true;
+            string item = _expectedReceiveItems.Dequeue();
+            _loadedItems.Enqueue(item);
+            _isLoading = false;
+            if (_expectedReceiveItems.Count == 0)
+            {
+                Rack rack = Warehouse.FindRackToSlot(_loadedItems.Peek(), _loadedItems.Count);
+                PrepareToSlot(rack.GetPickUpPoint(), rack, _loadedItems.Count);
+
+                Robot picker = Warehouse.FindPickerToPick(rack);
+                if(picker == null)
+                {
+                    Program.Print("can not find picker"); // bug here. or we increase number of picker?
+                    return;
+                }
+                picker.PrepareToSlot(rack.GetPickUpPoint(), rack, _loadedItems.Count);
+            }
         }
 
         public void FinishShipping()
         {
             _loadedItems.Dequeue();
-            _isShipping = false;
-            if (_loadedItems.Count == 0)
+            _isUnloading = false;
+            if (_loadedItems.Count == 0) // finish shipping
             {
-                if (_order._quantity == 0)
+                if (_order._quantity == 0) // no more item to pick, return to charging point
                     PrepareToReturn();
                 else
                 {
-                    _state = robot_state.pick;
+                    _state = robot_state.pick; // return to rack and continue loading item to ship
                     FindNewRouteToPick();
                 }
             }
         }
 
-        public void StartPicking()
-        {
-            _isPicking = true;
-        }
-
         public void FinishPicking()
         {
-            _isPicking = false;
+            _isLoading = false;
             _loadedItems.Enqueue(_order._productID);
             _order._quantity--;
 
             if (IsFull())
             {
                 PrepareToShip();
+            }
+
+        }
+
+        public void FinishSlotting()
+        {
+            _isUnloading = false;
+            _loadedItems.Dequeue();
+            _order._quantity--;
+
+            if (_loadedItems.Count == 0)
+            {
+                PrepareToReturn();
             }
 
         }
