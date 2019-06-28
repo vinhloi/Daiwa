@@ -172,6 +172,7 @@ namespace Daiwa
             {
                 _path = AStarPathfinding.FindPath(_location, _chargingPoint);
                 _state = robot_state.returning;
+                _destination_point = _chargingPoint;
             }
         }
 

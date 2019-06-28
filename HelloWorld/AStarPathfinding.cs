@@ -102,7 +102,7 @@ namespace Daiwa
             }
 
             // We can't find the path
-            Program.Print("Error: No path from " + (startPoint.X + 1) + "," + (startPoint.Y + 1) + " to " + (endPoint.X + 1) + "," + (endPoint.Y + 1));
+            Program.Print("No path from " + startPoint + " to " + endPoint + "\n");
             return new Stack<Point>();
         }
 
