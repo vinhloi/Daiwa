@@ -65,6 +65,8 @@ namespace Daiwa
         public List<Order> _PickOrders;
         public List<Order> _SlotOrders;
 
+        public static Random rnd;
+
         public Warehouse()
         {
             _numRows = 0;
@@ -86,6 +88,8 @@ namespace Daiwa
 
             _PickOrders = new List<Order>();
             _SlotOrders = new List<Order>();
+
+            rnd = new Random();
 
             LoadItemsFile("data\\items.csv");
             LoadItemCategoriesFile("data\\item_categories.csv");
@@ -265,7 +269,7 @@ namespace Daiwa
             if (product_info._storageType.Equals("fold"))
             {
                 int max_storage = max_storage_info._maxFoldStorage;
-                while (quantity >= max_storage / 2)
+                while (quantity >= 30)
                 {
                     if (_generalEmptyRacksList.Count > 0)
                     {
@@ -278,8 +282,13 @@ namespace Daiwa
                 }
 
                 // Find empty spot in the racks which contain product
-                foreach (GeneralPurposeRack rack in _generalRackList)
+                int start = rnd.Next(_generalRackList.Count);
+                // Find empty spot in the racks which contain product
+                for (int i = 0; i < _generalRackList.Count; i++)
                 {
+                    int pos = (i + start) % _generalRackList.Count;
+                    Rack rack = _generalRackList[pos];
+
                     if (quantity <= 0) //Get enough rack to store product.
                         break;
 
@@ -310,7 +319,7 @@ namespace Daiwa
             else
             {
                 int max_storage = max_storage_info._maxHangerStorage;
-                while (quantity >= max_storage / 2)
+                while (quantity >= 30)
                 {
                     if (_hangerEmptyRackList.Count > 0)
                     {
@@ -322,8 +331,13 @@ namespace Daiwa
                         break;
                 }
 
-                foreach (HangerRack rack in _hangerRackList)
+                int start = rnd.Next(_hangerRackList.Count);
+                // Find empty spot in the racks which contain product
+                for (int i = 0; i < _hangerRackList.Count; i++)
                 {
+                    int pos = (i + start) % _hangerRackList.Count;
+                    Rack rack = _hangerRackList[pos];
+
                     if (quantity <= 0) //Get enough rack to store product.
                         break;
 
@@ -567,14 +581,17 @@ namespace Daiwa
 
             if (product_info._storageType.Equals("fold"))
             {
+                int start = rnd.Next(_generalRackList.Count);
                 // Find empty spot in the racks which contain product
-                foreach (GeneralPurposeRack rack in _generalRackList)
+                for (int i = 0; i < _generalRackList.Count; i++)
                 {
+                    int pos = (i + start) % _generalRackList.Count;
+                    Rack rack = _generalRackList[pos];
+
                     // Find rack with the same product type and the same shipper. 
                     if (rack._productType.Equals(product_info._productType) &&
                         (rack._shipperID == product_info._shipperID) &&
-                        rack.IsEnoughSpaceToSlot(quantity) &&
-                        AvoidTrafficJam(rack))
+                        rack.IsEnoughSpaceToSlot(quantity))
                     {
                         result = rack;
                         break;
@@ -584,26 +601,23 @@ namespace Daiwa
                 // If can't find empty spot from rack with product, get a new empty rack
                 if (result == null && _generalEmptyRacksList.Count > 0)
                 {
-                    foreach (GeneralPurposeRack rack in _generalEmptyRacksList)
-                    {
-                        // Find rack which avoid the traffic jam
-                        if (AvoidTrafficJam(rack))
-                        {
-                            result = rack;
-                            _generalEmptyRacksList.Remove(rack);
-                            break;
-                        }
-                    }
+                    int pos = rnd.Next(_generalEmptyRacksList.Count);
+                    result = _generalEmptyRacksList[pos];
+                    _generalEmptyRacksList.Remove(result);
                 }
             }
             else
             {
-                foreach (HangerRack rack in _hangerRackList)
+                int start = rnd.Next(_hangerRackList.Count);
+                // Find empty spot in the racks which contain product
+                for (int i = 0; i < _hangerRackList.Count; i++)
                 {
+                    int pos = (i + start) % _hangerRackList.Count;
+                    Rack rack = _hangerRackList[pos];
+
                     // Find rack with the same shipper. 
                     if (rack._shipperID == product_info._shipperID &&
-                        rack.IsEnoughSpaceToSlot(quantity) &&
-                        AvoidTrafficJam(rack))
+                        rack.IsEnoughSpaceToSlot(quantity))
                     {
                         result = rack;
                     }
@@ -611,16 +625,9 @@ namespace Daiwa
 
                 if (result == null && _hangerEmptyRackList.Count > 0)
                 {
-                    foreach (GeneralPurposeRack rack in _generalEmptyRacksList)
-                    {
-                        // Find rack which avoid the traffic jam
-                        if (AvoidTrafficJam(rack))
-                        {
-                            result = rack;
-                            _generalEmptyRacksList.Remove(rack);
-                            break;
-                        }
-                    }
+                    int pos = rnd.Next(_hangerEmptyRackList.Count);
+                    result = _hangerEmptyRackList[pos];
+                    _hangerEmptyRackList.Remove(result);
                 }
             }
 
