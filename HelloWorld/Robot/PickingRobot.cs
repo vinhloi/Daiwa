@@ -22,13 +22,16 @@ namespace Daiwa
             if (sec == 0)
             {
                 _actionString = _id.ToString(); // add id at sec 0
+                if(_noPath)
+                {
+                    Program.Print("Refind path from " + _location + " to " + _destination_point + "\n");
+                    _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
+                }
             }
 
             if (_noPath)
             {
                 _actionString += " n";
-                Program.Print("Refind path from " + _location + " to " + _destination_point + "\n");
-                _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
                 return;
             }
 

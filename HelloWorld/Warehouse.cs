@@ -541,12 +541,12 @@ namespace Daiwa
                        rack._direction == Direction.Right ||
                        rack._direction == Direction.Fix)
                     {
-                        if (pick_point.X == robot._destination_point.X)
+                        if (pick_point.X == robot._destination_point.X || pick_point.X == robot._location.X)
                             return false;
                     }
                     else
                     {
-                        if (pick_point.Y == robot._destination_point.Y)
+                        if (pick_point.Y == robot._destination_point.Y || pick_point.Y == robot._location.Y)
                             return false;
                     }
                 }
@@ -638,7 +638,7 @@ namespace Daiwa
                 }
             }
 
-            Program.Print("Find rack to slot: " + result.GetPickUpPoint() + "\n");
+            Program.Print("Find rack to slot: " + result.GetPickUpPoint() + " " + result._num_items + "\n");
             return result;
         }
 
