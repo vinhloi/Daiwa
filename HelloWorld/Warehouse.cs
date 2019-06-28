@@ -51,8 +51,8 @@ namespace Daiwa
         // List of racks
         public static List<Rack> _generalRackList; // racks contain product
         public static List<Rack> _hangerRackList;  // racks contain product
-        public static Queue<Rack> _generalEmptyRacksQueue; // empty rack
-        public static Queue<Rack> _hangerEmptyRackQueue;   // empty rack
+        public static List<Rack> _generalEmptyRacksList; // empty rack
+        public static List<Rack> _hangerEmptyRackList;   // empty rack
 
         // List of robots
         public static Dictionary<int, Robot> _Pickers;
@@ -74,8 +74,8 @@ namespace Daiwa
             _DicMaxStorage = new Dictionary<string, string>();
             _generalRackList = new List<Rack>();
             _hangerRackList = new List<Rack>();
-            _generalEmptyRacksQueue = new Queue<Rack>();
-            _hangerEmptyRackQueue = new Queue<Rack>();
+            _generalEmptyRacksList = new List<Rack>();
+            _hangerEmptyRackList = new List<Rack>();
 
             _Pickers = new Dictionary<int, Robot>();
             _Hangers = new Dictionary<int, Robot>();
@@ -129,8 +129,8 @@ namespace Daiwa
                 case 10: //General-purpose rack (upward/downward directions)
                     for (int height = 1; height <= 5; height++)
                     {
-                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Up));
-                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Down));
+                        _generalEmptyRacksList.Add(new GeneralPurposeRack(column, row, height, Direction.Up));
+                        _generalEmptyRacksList.Add(new GeneralPurposeRack(column, row, height, Direction.Down));
                     }
                     Map[row, column] = 1;
                     break;
@@ -138,15 +138,15 @@ namespace Daiwa
                 case 11: //General-purpose rack (leftward/rightward directions)
                     for (int height = 1; height <= 5; height++)
                     {
-                        _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Left));
+                        _generalEmptyRacksList.Add(new GeneralPurposeRack(column, row, height, Direction.Left));
                         if (wall.Equals("1") == false) //walk around for racks at (146, 3)
-                            _generalEmptyRacksQueue.Enqueue(new GeneralPurposeRack(column, row, height, Direction.Right));
+                            _generalEmptyRacksList.Add(new GeneralPurposeRack(column, row, height, Direction.Right));
                     }
                     Map[row, column] = 1;
                     break;
 
                 case 12: //Hanger rack (leftward/rightward directions)
-                    _hangerEmptyRackQueue.Enqueue(new HangerRack(column, row));
+                    _hangerEmptyRackList.Add(new HangerRack(column, row));
                     Map[row, column] = 1;
                     break;
 
@@ -267,9 +267,10 @@ namespace Daiwa
                 int max_storage = max_storage_info._maxFoldStorage;
                 while (quantity >= max_storage)
                 {
-                    if (_generalEmptyRacksQueue.Count > 0)
+                    if (_generalEmptyRacksList.Count > 0)
                     {
-                        result.Add(_generalEmptyRacksQueue.Dequeue());
+                        result.Add(_generalEmptyRacksList[0]);
+                        _generalEmptyRacksList.RemoveAt(0);
                         quantity -= max_storage;
                     }
                 }
@@ -292,9 +293,10 @@ namespace Daiwa
 
                 if (quantity > 0) //If still not enough empty spot, get one from the empty racks
                 {
-                    if (_generalEmptyRacksQueue.Count > 0)
+                    if (_generalEmptyRacksList.Count > 0)
                     {
-                        result.Add(_generalEmptyRacksQueue.Dequeue());
+                        result.Add(_generalEmptyRacksList[0]);
+                        _generalEmptyRacksList.RemoveAt(0);
                         quantity -= max_storage;
                     }
                     else
@@ -308,9 +310,10 @@ namespace Daiwa
                 int max_storage = max_storage_info._maxHangerStorage;
                 while (quantity >= max_storage)
                 {
-                    if (_hangerEmptyRackQueue.Count > 0)
+                    if (_hangerEmptyRackList.Count > 0)
                     {
-                        result.Add(_hangerEmptyRackQueue.Dequeue());
+                        result.Add(_hangerEmptyRackList[0]);
+                        _hangerEmptyRackList.RemoveAt(0);
                         quantity -= max_storage;
                     }
                 }
@@ -331,9 +334,10 @@ namespace Daiwa
 
                 if (quantity > 0) //If still not enough rack, get one from the empty racks
                 {
-                    if (_hangerEmptyRackQueue.Count > 0)
+                    if (_hangerEmptyRackList.Count > 0)
                     {
-                        result.Add(_hangerEmptyRackQueue.Dequeue());
+                        result.Add(_hangerEmptyRackList[0]);
+                        _hangerEmptyRackList.RemoveAt(0);
                         quantity -= max_storage;
                     }
                     else
@@ -355,7 +359,7 @@ namespace Daiwa
             //_Hangers.Add(id, new HangingRobot(83, 13, id++));
 
             // Init 30 transporters
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 4; i++)
             {
                 _Transporters.Add(id, new TransportRobot(77, 2 + i, id++));
                 //_Transporters.Add(id, new TransportRobot(79, 2 + i, id++));
@@ -551,7 +555,6 @@ namespace Daiwa
                     }
                 }
             }
-            Program.Print("Checking " + rack._location + rack._direction);
             return true;
         }
 
@@ -579,9 +582,18 @@ namespace Daiwa
                 }
 
                 // If can't find empty spot from rack with product, get a new empty rack
-                if (result == null && _generalEmptyRacksQueue.Count > 0)
+                if (result == null && _generalEmptyRacksList.Count > 0)
                 {
-                    result = _generalEmptyRacksQueue.Dequeue();
+                    foreach (GeneralPurposeRack rack in _generalEmptyRacksList)
+                    {
+                        // Find rack which avoid the traffic jam
+                        if (AvoidTrafficJam(rack))
+                        {
+                            result = rack;
+                            _generalEmptyRacksList.Remove(rack);
+                            break;
+                        }
+                    }
                 }
             }
             else
@@ -597,9 +609,18 @@ namespace Daiwa
                     }
                 }
 
-                if (result == null && _hangerEmptyRackQueue.Count > 0)
+                if (result == null && _hangerEmptyRackList.Count > 0)
                 {
-                    result = _hangerEmptyRackQueue.Dequeue();
+                    foreach (GeneralPurposeRack rack in _generalEmptyRacksList)
+                    {
+                        // Find rack which avoid the traffic jam
+                        if (AvoidTrafficJam(rack))
+                        {
+                            result = rack;
+                            _generalEmptyRacksList.Remove(rack);
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -609,7 +630,6 @@ namespace Daiwa
 
                 if (result.isEmpty())
                 {
-                    Program.Print("empty rack " + result._location + result._direction + "\n");
                     result._shipperID = product_info._shipperID;
                     result.SetMaxStorage(max_storage_info);
                     if (result._storageType.Equals("fold"))
@@ -622,7 +642,7 @@ namespace Daiwa
                 }
             }
 
-            Program.Print("Find rack to slot: " + result._location + result._direction + "\n");
+            Program.Print("Find rack to slot: " + result.GetPickUpPoint() + "\n");
             return result;
         }
 
@@ -816,7 +836,7 @@ namespace Daiwa
                 Program.WriteOutput(robot._actionString + "\n");
                 if (robot._state != robot_state.free)
                 {
-                    string debug = robot._actionString + " " + robot.type + " " + robot._state + " " + robot._location + " to " + robot._destination_point + "\n";
+                    string debug = robot._actionString + " " + robot.type + " " + robot._state + " " + robot._location + robot._direction + " to " + robot._destination_point + "\n";
                     Program.Print(debug);
                 }
             }
