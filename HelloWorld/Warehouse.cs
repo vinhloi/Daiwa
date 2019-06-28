@@ -354,10 +354,6 @@ namespace Daiwa
         {
             Byte id = 10;
 
-            //_Transporters.Add(id, new TransportRobot(81, 13, id++));
-            //_Pickers.Add(id, new PickingRobot(82, 13, id++));
-            //_Hangers.Add(id, new HangingRobot(83, 13, id++));
-
             // Init 30 transporters
             for (int i = 0; i < 4; i++)
             {
@@ -367,26 +363,26 @@ namespace Daiwa
             }
 
             // Init 33 Pickers
-            _Pickers.Add(id, new PickingRobot(18, 26, id++));
-            _Pickers.Add(id, new PickingRobot(18, 30, id++));
-            _Pickers.Add(id, new PickingRobot(18, 36, id++));
-            _Pickers.Add(id, new PickingRobot(18, 40, id++));
-            _Pickers.Add(id, new PickingRobot(18, 44, id++));
-            _Pickers.Add(id, new PickingRobot(47, 26, id++));
-            _Pickers.Add(id, new PickingRobot(47, 30, id++));
-            _Pickers.Add(id, new PickingRobot(47, 36, id++));
-            _Pickers.Add(id, new PickingRobot(47, 40, id++));
-            _Pickers.Add(id, new PickingRobot(47, 44, id++));
+            //_Pickers.Add(id, new PickingRobot(18, 26, id++));
+            //_Pickers.Add(id, new PickingRobot(18, 30, id++));
+            //_Pickers.Add(id, new PickingRobot(18, 36, id++));
+            //_Pickers.Add(id, new PickingRobot(18, 40, id++));
+            //_Pickers.Add(id, new PickingRobot(18, 44, id++));
+            //_Pickers.Add(id, new PickingRobot(47, 26, id++));
+            //_Pickers.Add(id, new PickingRobot(47, 30, id++));
+            //_Pickers.Add(id, new PickingRobot(47, 36, id++));
+            //_Pickers.Add(id, new PickingRobot(47, 40, id++));
+            //_Pickers.Add(id, new PickingRobot(47, 44, id++));
 
-            for (int i = 0; i < 16; i++)
+            for (int i = 0; i < 8; i++)
             {
-                _Pickers.Add(id, new PickingRobot((84 + i * 4), 13, id++));
+                _Pickers.Add(id, new PickingRobot((84 + i * 8), 13, id++));
             }
 
-            for (int i = 0; i < 7; i++)
-            {
-                _Pickers.Add(id, new PickingRobot(155, (50 + i * 8), id++));
-            }
+            //for (int i = 0; i < 7; i++)
+            //{
+            //    _Pickers.Add(id, new PickingRobot(155, (50 + i * 8), id++));
+            //}
 
             //for (int i = 0; i < 9; i++)
             //{
@@ -395,30 +391,30 @@ namespace Daiwa
 
 
             // Init 23 Hangers
-            for (int i = 0; i < 4; i++)
-            {
-                _Hangers.Add(id, new HangingRobot(64 + i * 4, 32, id++));
-            }
-
-            for (int i = 0; i < 3; i++)
-            {
-                _Hangers.Add(id, new HangingRobot(86 + i * 4, 32, id++));
-            }
-
-            for (int i = 0; i < 5; i++)
-            {
-                _Hangers.Add(id, new HangingRobot(100 + i * 4, 32, id++));
-            }
-
-            for (int i = 0; i < 3; i++)
-            {
-                _Hangers.Add(id, new HangingRobot(122 + i * 4, 32, id++));
-            }
-
             for (int i = 0; i < 8; i++)
             {
-                _Hangers.Add(id, new HangingRobot(136 + i * 4, 32, id++));
+                _Hangers.Add(id, new HangingRobot(64 + i * 8, 32, id++));
             }
+
+            //for (int i = 0; i < 3; i++)
+            //{
+            //    _Hangers.Add(id, new HangingRobot(86 + i * 4, 32, id++));
+            //}
+
+            //for (int i = 0; i < 5; i++)
+            //{
+            //    _Hangers.Add(id, new HangingRobot(100 + i * 4, 32, id++));
+            //}
+
+            //for (int i = 0; i < 3; i++)
+            //{
+            //    _Hangers.Add(id, new HangingRobot(122 + i * 4, 32, id++));
+            //}
+
+            //for (int i = 0; i < 8; i++)
+            //{
+            //    _Hangers.Add(id, new HangingRobot(136 + i * 4, 32, id++));
+            //}
 
             //Program.Print(_Transporters.Count.ToString() + " ");
 
@@ -836,7 +832,7 @@ namespace Daiwa
                 Program.WriteOutput(robot._actionString + "\n");
                 if (robot._state != robot_state.free)
                 {
-                    string debug = robot._actionString + " " + robot.type + " " + robot._state + " " + robot._location + robot._direction + " to " + robot._destination_point + "\n";
+                    string debug = robot._actionString + " " + robot.type + " " + robot._state + " " + robot._location + robot._direction + " to " + robot._destination_point + " " + robot._path.Count + "\n";
                     Program.Print(debug);
                 }
             }

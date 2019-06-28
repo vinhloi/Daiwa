@@ -72,6 +72,7 @@ namespace Daiwa
             Direction movingDirection = GetMovingDirection(new_location);
             if (movingDirection == Direction.Error)
             {
+                Program.Print("Wrong tile\n");
                 return; // The new tile is not adjecent to current tile, return
             }
 
@@ -109,7 +110,7 @@ namespace Daiwa
                     _direction = (Direction)(((int)_direction + 1) % 4);
                     return true;
                 default:
-                    return true;
+                    return false;
             }
         }
 

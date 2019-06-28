@@ -27,13 +27,13 @@ namespace Daiwa
                 _actionString = _id.ToString(); // add id at sec 0
             }
 
-            //if(_noPath)
-            //{
-            //    _actionString += " n";
-            //    Program.Print("Refind path from " + _location + " to " + _destination_point + "\n");
-            //    _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
-            //    return;
-            //}
+            if (_noPath)
+            {
+                _actionString += " n";
+                Program.Print("Refind path from " + _location + " to " + _destination_point + "\n");
+                _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
+                return;
+            }
 
             // when picking, stop 1 tile before the pickup point
             if (_path.Count == 1 && 
@@ -56,17 +56,24 @@ namespace Daiwa
                 }
                 else // new location is obstructed
                 {
+                    //Program.Print(_id + " is obstructed by " + robot_id + " at " + _path.Peek() + "\n");
+
                     Robot another_robot = Warehouse._AllMovingRobots[robot_id];
                     if (another_robot._path.Count == 0)// anther robot is stopping
                     {
+                        Program.Print(_id + " Reroute\n");
                         Reroute();
                     }
                     else // anther robot is moving
                     {
                         if (IsFacing(another_robot))
                         {
+                            Program.Print(_id + "Reroute " + another_robot._id + "\n");
                             if (another_robot.Reroute() == false)
+                            {
+                                Program.Print(_id + "Reroute\n");
                                 this.Reroute();
+                            }
                         }
                     }
                     _actionString += " n";//vinh: should check if 2 robot facing each other
