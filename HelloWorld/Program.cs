@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,6 @@ namespace Daiwa
         static void Main(string[] args)
         {
             warehouse = new Warehouse();
-
             StartSimulator();
             //simproc.WaitForExit();
             while (true)

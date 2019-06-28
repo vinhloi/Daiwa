@@ -31,8 +31,10 @@ namespace Daiwa
 
     public static class AStarPathfinding
     {
-        public static Stack<Point> FindPath(Point startPoint, Point endPoint)
+        public static Stack<Point> FindPath(Point startPoint, Point endPoint, out bool noPath)
         {
+            noPath = false;
+
             var start = new Location(startPoint);
             var goal = new Location(endPoint);
             var openList = new List<Location>();
@@ -111,6 +113,8 @@ namespace Daiwa
             //        Program.Print(debug);
             //    }
             //}
+
+            noPath = true;
             return new Stack<Point>();
         }
 

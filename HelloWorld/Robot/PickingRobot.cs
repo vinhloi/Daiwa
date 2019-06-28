@@ -24,6 +24,14 @@ namespace Daiwa
                 _actionString = _id.ToString(); // add id at sec 0
             }
 
+            //if (_noPath)
+            //{
+            //    _actionString += " n";
+            //    Program.Print("Refind path from " + _location + " to " + _destination_point + "\n");
+            //    _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
+            //    return;
+            //}
+
             if (_state == robot_state.free) // no action
             {
                 _actionString += " n";
@@ -82,7 +90,7 @@ namespace Daiwa
         {
             if (_state != robot_state.returning && _state != robot_state.free && _pickingTime == 0)
             {
-                _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
                 _state = robot_state.returning;
                 _destination_point = _chargingPoint;
             }
@@ -93,7 +101,8 @@ namespace Daiwa
             if (_state != robot_state.returning && _state != robot_state.free && _pickingTime == 0)
             {
                 Program.Print("Forceb " + _id + " " + _state + " " + _destination_point + "\n");
-                _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
+                _destination_point = _chargingPoint;
                 _backUpState = _state;
                 _state = robot_state.returning;
             }
@@ -209,12 +218,12 @@ namespace Daiwa
                 case robot_state.slot:
                     if (_path.Count == 0)
                         return false;
-                    _path = AStarPathfinding.FindPath(_location, _destination_point);
+                    _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
                     return true;
                 case robot_state.returning:
                     if (_path.Count == 0)
                         return false;
-                    _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                    _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
                     return true;
                 default:
                     return false;

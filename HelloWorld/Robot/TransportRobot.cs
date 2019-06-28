@@ -27,6 +27,14 @@ namespace Daiwa
                 _actionString = _id.ToString(); // add id at sec 0
             }
 
+            //if(_noPath)
+            //{
+            //    _actionString += " n";
+            //    Program.Print("Refind path from " + _location + " to " + _destination_point + "\n");
+            //    _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
+            //    return;
+            //}
+
             // when picking, stop 1 tile before the pickup point
             if (_path.Count == 1 && 
                 _path.Peek().Equals(_destination_point)
@@ -95,7 +103,7 @@ namespace Daiwa
                     }
                     else
                     {
-                        _path = AStarPathfinding.FindPath(_location, _destination_point);
+                        _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
                         return true;
                     }
                 case robot_state.returning:
@@ -105,7 +113,7 @@ namespace Daiwa
                     }
                     else
                     {
-                        _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                        _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
                         return true;
                     }
                 default:
@@ -130,7 +138,7 @@ namespace Daiwa
             {
                 if (Warehouse.ValueAt(newgoal) == 0)
                 {
-                    _path = AStarPathfinding.FindPath(_location, newgoal);
+                    _path = AStarPathfinding.FindPath(_location, newgoal, out _noPath);
                     return true;
                 }
             }
@@ -143,7 +151,7 @@ namespace Daiwa
             ShippingRobot shipper = (ShippingRobot)Warehouse._Shippers[product._shipperID];
             _destination_point = shipper.GetShipPoint();
 
-            _path = AStarPathfinding.FindPath(_location, _destination_point);
+            _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
             _state = robot_state.ship;
         }
 
@@ -162,7 +170,7 @@ namespace Daiwa
         public void PrepareToReceive()
         {
             _destination_point = Warehouse._Receiver.GetReceivePoint(); ;
-            _path = AStarPathfinding.FindPath(_location, _destination_point);
+            _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
             _state = robot_state.receive;
         }
 
@@ -170,7 +178,7 @@ namespace Daiwa
         {
             if (_state != robot_state.returning && _state != robot_state.free && _isLoading == false && _isUnloading == false)
             {
-                _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
                 _state = robot_state.returning;
                 _destination_point = _chargingPoint;
             }
@@ -181,7 +189,8 @@ namespace Daiwa
             if (_state != robot_state.returning && _state != robot_state.free && _isLoading == false && _isUnloading == false)
             {
                 Program.Print("Forceb " + _id + " " + _state + " " + _destination_point + "\n");
-                _path = AStarPathfinding.FindPath(_location, _chargingPoint);
+                _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
+                _destination_point = _chargingPoint;
                 _backUpState = _state;
                 _state = robot_state.returning;
             }

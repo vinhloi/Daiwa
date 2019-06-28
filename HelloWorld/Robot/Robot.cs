@@ -38,6 +38,7 @@ namespace Daiwa
         public Stack<Point> _path;
         public Order _order;
         public string type;
+        public bool _noPath; // Indicate no path to go from _location to _destination_point
 
         public Robot(int x, int y, Byte id)
         {
@@ -54,6 +55,7 @@ namespace Daiwa
             Warehouse.Map[y, x] = id;
 
             _order = new Order();
+            _noPath = false;
         }
 
         public string GetHexaPosition()
@@ -162,7 +164,7 @@ namespace Daiwa
 
         public virtual void PrepareToPick(Point pickup_point, Rack rack, string product_id, int quantity)
         {
-            _path = AStarPathfinding.FindPath(_location, pickup_point);
+            _path = AStarPathfinding.FindPath(_location, pickup_point, out _noPath);
             _state = robot_state.pick;
 
             _order._rack = rack;
@@ -173,7 +175,7 @@ namespace Daiwa
 
         public virtual void PrepareToSlot(Point pickup_point, Rack rack, int quantity)
         {
-            _path = AStarPathfinding.FindPath(_location, pickup_point);
+            _path = AStarPathfinding.FindPath(_location, pickup_point, out _noPath);
             _state = robot_state.slot;
 
             _order._rack = rack;
@@ -195,7 +197,7 @@ namespace Daiwa
         {
             _state = _backUpState;
             _backUpState = robot_state.free;
-            _path = AStarPathfinding.FindPath(_location, _destination_point);
+            _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
             Program.Print("Resume: " + _id + " " + _backUpState + " " + _destination_point + "\n");
         }
 
