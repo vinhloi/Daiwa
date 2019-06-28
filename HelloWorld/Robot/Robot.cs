@@ -43,10 +43,10 @@ namespace Daiwa
         public Robot(int x, int y, Byte id)
         {
             _id = id;
-            _location.X = x;
-            _location.Y = y;
             _chargingPoint.X = x;
             _chargingPoint.Y = y;
+            _location = _chargingPoint;
+            _destination_point = _chargingPoint;
             _direction = Direction.Up;
             _actionString = "";
             _backUpState = robot_state.free;
@@ -195,10 +195,13 @@ namespace Daiwa
 
         public virtual void ResumeActivityLastDay()
         {
-            _state = _backUpState;
-            _backUpState = robot_state.free;
-            _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
-            Program.Print("Resume: " + _id + " " + _backUpState + " " + _destination_point + "\n");
+            if(_backUpState != robot_state.free)
+            {
+                _state = _backUpState;
+                _backUpState = robot_state.free;
+                _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
+                Program.Print("Resume: " + _id + " " + _backUpState + " " + _destination_point + "\n");
+            }
         }
 
         public virtual bool Reroute()
