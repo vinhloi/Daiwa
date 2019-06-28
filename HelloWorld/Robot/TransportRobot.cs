@@ -52,31 +52,19 @@ namespace Daiwa
                 Byte robot_id = Warehouse.ValueAt(_path.Peek());
                 if (robot_id == 0) // No robot standing at this tile, road is clear
                 {
+                    if (Rotate() == true)
+                        return;
                     MoveToNextTile();
                 }
                 else // new location is obstructed
                 {
-                    //Program.Print(_id + " is obstructed by " + robot_id + " at " + _path.Peek() + "\n");
-
                     Robot another_robot = Warehouse._AllMovingRobots[robot_id];
-                    if (another_robot._path.Count == 0)// anther robot is stopping
+                    if (another_robot._path.Count == 0 || IsCollideWith(another_robot))
                     {
-                        Program.Print(_id + " Reroute\n");
+                        Program.Print(_id + " is obstructed by " + robot_id + " at " + _path.Peek() + "\n");
                         Reroute();
                     }
-                    else // anther robot is moving
-                    {
-                        if (IsFacing(another_robot))
-                        {
-                            Program.Print(_id + "Reroute " + another_robot._id + "\n");
-                            if (another_robot.Reroute() == false)
-                            {
-                                Program.Print(_id + "Reroute\n");
-                                this.Reroute();
-                            }
-                        }
-                    }
-                    _actionString += " n";//vinh: should check if 2 robot facing each other
+                    _actionString += " n"; 
                 }
             }
             else // we arrive at the destination
@@ -104,6 +92,7 @@ namespace Daiwa
                 case robot_state.slot:
                     return FindNewRouteToPick();
                 case robot_state.ship:
+                case robot_state.receive:
                     if (_path.Count == 0)
                     {
                         return false;
@@ -124,6 +113,7 @@ namespace Daiwa
                         return true;
                     }
                 default:
+                    Program.Print("Reroute: Unkown state");
                     return false;
             }
         }

@@ -104,15 +104,10 @@ namespace Daiwa
             }
 
             // We can't find the path
-            Program.Print("No path from " + startPoint + " to " + endPoint + "\n");
-            //foreach (Robot robot in Warehouse._AllMovingRobots.Values)
-            //{
-            //    if (robot._state != robot_state.free)
-            //    {
-            //        string debug = robot._location + "\n";
-            //        Program.Print(debug);
-            //    }
-            //}
+            Program.Print("No path from " + startPoint + " to " + endPoint + ":");
+            foreach (Robot robot in Warehouse._AllMovingRobots.Values)
+                if (robot._state != robot_state.free)
+                    Program.Print(robot._location.ToString());
 
             noPath = true;
             return new Stack<Point>();

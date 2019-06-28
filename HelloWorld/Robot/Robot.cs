@@ -67,21 +67,22 @@ namespace Daiwa
 
         protected virtual void MoveToNextTile()
         {
+            SetLocation(_path.Pop());
+            _actionString += " f";
+        }
+
+        protected bool Rotate()
+        {
             Point new_location = _path.Peek();
 
-            Direction movingDirection = GetMovingDirection(new_location);
-            if (movingDirection == Direction.Error)
+            Direction new_direction = GetMovingDirection(new_location);
+            if (new_direction == Direction.Error)
             {
                 Program.Print("Wrong tile\n");
-                return; // The new tile is not adjecent to current tile, return
+                return false;
             }
 
-            if (Rotate(movingDirection) == false)
-            {
-                SetLocation(new_location);
-                _actionString += " f";
-                _path.Pop();
-            }
+            return Rotate(new_direction);
         }
 
         protected bool Rotate(Direction new_direction)
@@ -196,7 +197,7 @@ namespace Daiwa
 
         public virtual void ResumeActivityLastDay()
         {
-            if(_backUpState != robot_state.free)
+            if (_backUpState != robot_state.free)
             {
                 _state = _backUpState;
                 _backUpState = robot_state.free;
@@ -211,12 +212,9 @@ namespace Daiwa
             return false;
         }
 
-        public bool IsFacing(Robot another_robot)
+        public bool IsCollideWith(Robot another_robot)
         {
-            if((_direction == Direction.Up && another_robot._direction== Direction.Down) ||
-                (_direction == Direction.Down && another_robot._direction == Direction.Up) ||
-                (_direction == Direction.Left && another_robot._direction == Direction.Left) ||
-                (_direction == Direction.Right && another_robot._direction == Direction.Right))
+            if (_location.Equals(another_robot._path.Peek()))
             {
                 return true;
             }

@@ -38,6 +38,9 @@ namespace Daiwa
             }
             else if (_path.Count > 0) // moving
             {
+                if (Rotate() == true)
+                    return;
+
                 Byte robot_id = Warehouse.ValueAt(_path.Peek());
                 if (robot_id == 0) // No robot standing at this tile, road is clear
                 {
@@ -55,7 +58,7 @@ namespace Daiwa
                     }
                     else // another robot is moving
                     {
-                        if (IsFacing(another_robot))
+                        if (IsCollideWith(another_robot))
                         {
                             if (another_robot.Reroute() == false)
                                 this.Reroute();
