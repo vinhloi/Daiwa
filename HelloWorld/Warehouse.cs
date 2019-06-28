@@ -197,7 +197,7 @@ namespace Daiwa
         }
 
 
-        public void SpecifyProductInitialPosition(List<string> input)
+        public void Store(List<string> input)
         {
             int count = 0;
             Program.WriteOutput("store");
@@ -265,7 +265,7 @@ namespace Daiwa
             if (product_info._storageType.Equals("fold"))
             {
                 int max_storage = max_storage_info._maxFoldStorage;
-                while (quantity >= max_storage)
+                while (quantity >= max_storage / 2)
                 {
                     if (_generalEmptyRacksList.Count > 0)
                     {
@@ -273,6 +273,8 @@ namespace Daiwa
                         _generalEmptyRacksList.RemoveAt(0);
                         quantity -= max_storage;
                     }
+                    else
+                        break;
                 }
 
                 // Find empty spot in the racks which contain product
@@ -308,7 +310,7 @@ namespace Daiwa
             else
             {
                 int max_storage = max_storage_info._maxHangerStorage;
-                while (quantity >= max_storage)
+                while (quantity >= max_storage / 2)
                 {
                     if (_hangerEmptyRackList.Count > 0)
                     {
@@ -316,6 +318,8 @@ namespace Daiwa
                         _hangerEmptyRackList.RemoveAt(0);
                         quantity -= max_storage;
                     }
+                    else
+                        break;
                 }
 
                 foreach (HangerRack rack in _hangerRackList)

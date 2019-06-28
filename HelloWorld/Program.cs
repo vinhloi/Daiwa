@@ -76,7 +76,7 @@ namespace Daiwa
                 switch (values[0])
                 {
                     case "init":
-                        warehouse.SpecifyProductInitialPosition(values);
+                        warehouse.Store(values);
                         warehouse.SpecifyRobotInitialPosition();
                         break;
                     case "pick":
