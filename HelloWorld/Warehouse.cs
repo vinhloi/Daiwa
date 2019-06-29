@@ -570,6 +570,11 @@ namespace Daiwa
                     }
                 }
             }
+
+            Program.Print("\n" + rack.GetPickUpPoint() + " avoid ");
+            foreach (Robot robot in _AllMovingRobots.Values)
+                if (robot._state != robot_state.free)
+                    Program.Print(" " + robot._location + robot._destination_point);
             return true;
         }
 

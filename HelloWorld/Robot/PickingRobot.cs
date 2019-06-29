@@ -54,7 +54,7 @@ namespace Daiwa
                     Robot another_robot = Warehouse._AllMovingRobots[robot_id];
                     if (another_robot._path.Count == 0)// anther robot is stopping
                     {
-                        if (Warehouse._Transporters.ContainsKey(another_robot._id))
+                        if (Warehouse._Transporters.ContainsKey(another_robot._id) && _destination_point.Equals(another_robot._destination_point))
                         {
                             Program.Print(_id + " " + _path.Count + " Force " + another_robot._id + " " + another_robot._path.Count + "Rerout\n");
                             another_robot.Reroute();
@@ -111,7 +111,8 @@ namespace Daiwa
             {
                 Program.Print("Force return " + _id + " " + _state + " " + _destination_point + "\n");
                 _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
-                _destination_point = _chargingPoint;
+                if (_noPath == true)
+                    return;
                 _backUpState = _state;
                 _state = robot_state.returning;
             }

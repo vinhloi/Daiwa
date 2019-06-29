@@ -89,6 +89,9 @@ namespace Daiwa
 
         public override bool Reroute()
         {
+            if (_isLoading == true || _isUnloading == true)
+                return false;
+
             switch(_state)
             {
                 case robot_state.pick:
@@ -190,7 +193,8 @@ namespace Daiwa
             {
                 Program.Print("Force return " + _id + " " + _state + " " + _destination_point + "\n");
                 _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
-                _destination_point = _chargingPoint;
+                if (_noPath == true)
+                    return;
                 _backUpState = _state;
                 _state = robot_state.returning;
             }
