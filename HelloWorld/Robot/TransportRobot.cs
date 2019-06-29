@@ -105,6 +105,7 @@ namespace Daiwa
                     }
                     else
                     {
+                        Program.Print(_id + "recieve reroute to " + _destination_point + "\n");
                         _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
                         return true;
                     }
@@ -115,6 +116,7 @@ namespace Daiwa
                     }
                     else
                     {
+                        Program.Print(_id + "return reroute to " + _chargingPoint + "\n");
                         _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
                         return true;
                     }
@@ -141,6 +143,7 @@ namespace Daiwa
             {
                 if (Warehouse.ValueAt(newgoal) == 0)
                 {
+                    Program.PrintLine(_id + "pick or slot reroute to " + newgoal);
                     _path = AStarPathfinding.FindPath(_location, newgoal, out _noPath);
                     return true;
                 }

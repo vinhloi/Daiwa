@@ -119,5 +119,9 @@ namespace Daiwa
             Console.Write(text);
         }
 
+        public static void PrintLine(string text)
+        {
+            Console.WriteLine(text);
+        }
     }
 }

@@ -607,9 +607,15 @@ namespace Daiwa
                 // If can't find empty spot from rack with product, get a new empty rack
                 if (result == null && _generalEmptyRacksList.Count > 0)
                 {
-                    int pos = rnd.Next(_generalEmptyRacksList.Count);
-                    result = _generalEmptyRacksList[pos];
-                    _generalEmptyRacksList.Remove(result);
+                    foreach(Rack emptyrack in _generalEmptyRacksList)
+                    {
+                        if(AvoidTrafficJam(emptyrack))
+                        {
+                            result = emptyrack;
+                            _generalEmptyRacksList.Remove(result);
+                            break;
+                        }
+                    }
                 }
             }
             else
@@ -631,9 +637,15 @@ namespace Daiwa
 
                 if (result == null && _hangerEmptyRackList.Count > 0)
                 {
-                    int pos = rnd.Next(_hangerEmptyRackList.Count);
-                    result = _hangerEmptyRackList[pos];
-                    _hangerEmptyRackList.Remove(result);
+                    foreach (Rack emptyrack in _hangerEmptyRackList)
+                    {
+                        if (AvoidTrafficJam(emptyrack))
+                        {
+                            result = emptyrack;
+                            _hangerEmptyRackList.Remove(result);
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -655,7 +667,7 @@ namespace Daiwa
                 }
             }
 
-            Program.Print("Find rack to slot: " + result._storageType + " " + result.GetPickUpPoint() + " " + result._num_items + "\n");
+            Program.Print("\nFind rack to slot: " + result._storageType + " " + result.GetPickUpPoint() + " " + result._num_items + "\n");
             return result;
         }
 
