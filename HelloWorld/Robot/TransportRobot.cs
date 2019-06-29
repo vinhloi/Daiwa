@@ -151,7 +151,7 @@ namespace Daiwa
             ShippingRobot shipper = (ShippingRobot)Warehouse._Shippers[product._shipperID];
             _destination_point = shipper.GetShipPoint();
 
-            _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
+            _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath, true);
             _state = robot_state.ship;
         }
 
@@ -188,7 +188,7 @@ namespace Daiwa
         {
             if (_state != robot_state.returning && _state != robot_state.free && _isLoading == false && _isUnloading == false)
             {
-                Program.Print("Forceb " + _id + " " + _state + " " + _destination_point + "\n");
+                Program.Print("Force return " + _id + " " + _state + " " + _destination_point + "\n");
                 _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
                 _destination_point = _chargingPoint;
                 _backUpState = _state;
@@ -209,8 +209,6 @@ namespace Daiwa
                     Program.Print("Racks are full");
                     return;
                 }
-
-                //Program.Print(rack.GetXXYYDH() + " " + rack._num_items + " " + rack._expectedSlotQuantity + " " + rack._max_item + "\n");
 
                 PrepareToSlot(rack.GetPickUpPoint(), rack, _loadedItems.Count);
 

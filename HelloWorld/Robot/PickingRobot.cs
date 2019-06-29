@@ -55,9 +55,12 @@ namespace Daiwa
                     if (another_robot._path.Count == 0)// anther robot is stopping
                     {
                         if (Warehouse._Transporters.ContainsKey(another_robot._id))
+                        {
+                            Program.Print(_id + " " + _path.Count + " Force " + another_robot._id + " " + another_robot._path.Count + "Rerout\n");
                             another_robot.Reroute();
+                        }
                         else
-                            this.Reroute();
+                            Reroute();
                     }
                     else // another robot is moving
                     {
@@ -106,7 +109,7 @@ namespace Daiwa
         {
             if (_state != robot_state.returning && _state != robot_state.free && _pickingTime == 0)
             {
-                Program.Print("Forceb " + _id + " " + _state + " " + _destination_point + "\n");
+                Program.Print("Force return " + _id + " " + _state + " " + _destination_point + "\n");
                 _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
                 _destination_point = _chargingPoint;
                 _backUpState = _state;

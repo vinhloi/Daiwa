@@ -156,6 +156,7 @@ namespace Daiwa
 
                 case 20: //Receiving point
                     _Receiver = new ReceivingRobot(column, row, 5); // Trick: set id = {5} to avoid 0
+                    Map[row, column] = 1;
                     break;
 
                 case 21: // Shipping point (corresponding to Shipper ID 1 to 4)
@@ -164,6 +165,7 @@ namespace Daiwa
                 case 24:
                     // Trick: set id = {6 7 8 9} to avoid 1 
                     _Shippers.Add(Map[row, column] - 20, new ShippingRobot(column, row, (Byte)(Map[row, column] - 15)));
+                    Map[row, column] = 1;
                     break;
                 default:
                     break;
@@ -269,7 +271,7 @@ namespace Daiwa
             if (product_info._storageType.Equals("fold"))
             {
                 int max_storage = max_storage_info._maxFoldStorage;
-                while (quantity >= 30)
+                while (quantity >= 10)
                 {
                     if (_generalEmptyRacksList.Count > 0)
                     {
@@ -550,14 +552,13 @@ namespace Daiwa
         {
             Point pick_point = rack.GetPickUpPoint();
 
-            foreach (Robot robot in _Transporters.Values)
+            foreach (Robot robot in _AllMovingRobots.Values)
             {
-                if ((robot._state == robot_state.pick || robot._state == robot_state.slot) &&
-                    ValueAt(rack._location) == ValueAt(robot._order._rack._location))
+                if(robot._state != robot_state.free)
                 {
                     if (rack._direction == Direction.Left ||
-                       rack._direction == Direction.Right ||
-                       rack._direction == Direction.Fix)
+                   rack._direction == Direction.Right ||
+                   rack._direction == Direction.Fix)
                     {
                         if (pick_point.X == robot._destination_point.X || pick_point.X == robot._location.X)
                             return false;
@@ -591,7 +592,7 @@ namespace Daiwa
                     // Find rack with the same product type and the same shipper. 
                     if (rack._productType.Equals(product_info._productType) &&
                         (rack._shipperID == product_info._shipperID) &&
-                        rack.IsEnoughSpaceToSlot(quantity))
+                        rack.IsEnoughSpaceToSlot(quantity) && AvoidTrafficJam(rack))
                     {
                         result = rack;
                         break;
@@ -617,7 +618,7 @@ namespace Daiwa
 
                     // Find rack with the same shipper. 
                     if (rack._shipperID == product_info._shipperID &&
-                        rack.IsEnoughSpaceToSlot(quantity))
+                        rack.IsEnoughSpaceToSlot(quantity) && AvoidTrafficJam(rack))
                     {
                         result = rack;
                     }
@@ -649,7 +650,7 @@ namespace Daiwa
                 }
             }
 
-            Program.Print("Find rack to slot: " + result.GetPickUpPoint() + " " + result._num_items + "\n");
+            Program.Print("Find rack to slot: " + result._storageType + " " + result.GetPickUpPoint() + " " + result._num_items + "\n");
             return result;
         }
 

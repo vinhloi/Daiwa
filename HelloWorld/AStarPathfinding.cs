@@ -31,7 +31,7 @@ namespace Daiwa
 
     public static class AStarPathfinding
     {
-        public static Stack<Point> FindPath(Point startPoint, Point endPoint, out bool noPath)
+        public static Stack<Point> FindPath(Point startPoint, Point endPoint, out bool noPath, bool ignoreRobot = false)
         {
             noPath = false;
 
@@ -64,7 +64,7 @@ namespace Daiwa
                 openList.Remove(current);
                 closedList.Add(current);
 
-                var adjacentSquares = GetWalkableAdjacentSquares(current, goal);
+                var adjacentSquares = GetWalkableAdjacentSquares(current, goal, ignoreRobot);
 
                 foreach (var adjacentSquare in adjacentSquares)
                 {
@@ -104,16 +104,16 @@ namespace Daiwa
             }
 
             // We can't find the path
-            Program.Print("No path from " + startPoint + " to " + endPoint + ":");
+            Program.Print("\nNo path from " + startPoint + " to " + endPoint + ":");
             foreach (Robot robot in Warehouse._AllMovingRobots.Values)
                 if (robot._state != robot_state.free)
-                    Program.Print(robot._location.ToString());
+                    Program.Print("[" + robot._location + robot._path.Count + "]");
 
             noPath = true;
             return new Stack<Point>();
         }
 
-        private static List<Location> GetWalkableAdjacentSquares(Location current, Location goal)
+        private static List<Location> GetWalkableAdjacentSquares(Location current, Location goal, bool ignoreRobot = false)
         {
             int x = current.X;
             int y = current.Y;
@@ -126,8 +126,17 @@ namespace Daiwa
                 new Location ( x, y + 1 ),
             };
 
-            // retur Adjacent Squares which are moveable (value = 0)
-            return proposedLocations.Where(l => Warehouse.Map[l.Y, l.X] == 0 || (l.X == goal.X && l.Y == goal.Y)).ToList();
+            if(ignoreRobot)
+            {
+                // retur Adjacent Squares which are moveable and ignore robot position (value != 1)
+                return proposedLocations.Where(l => Warehouse.Map[l.Y, l.X] != 1).ToList();
+            }
+            else
+            {
+                // retur Adjacent Squares which are moveable (value = 0)
+                return proposedLocations.Where(l => Warehouse.Map[l.Y, l.X] == 0 || (l.X == goal.X && l.Y == goal.Y)).ToList();
+            }
+         
         }
 
         private static Stack<Point> ReconstructPath(Location current)

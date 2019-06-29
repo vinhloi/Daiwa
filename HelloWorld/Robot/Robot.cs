@@ -177,7 +177,7 @@ namespace Daiwa
 
         public virtual void PrepareToSlot(Point pickup_point, Rack rack, int quantity)
         {
-            _path = AStarPathfinding.FindPath(_location, pickup_point, out _noPath);
+            _path = AStarPathfinding.FindPath(_location, pickup_point, out _noPath, true);
             _state = robot_state.slot;
 
             _order._rack = rack;
