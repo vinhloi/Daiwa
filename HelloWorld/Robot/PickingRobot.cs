@@ -175,7 +175,7 @@ namespace Daiwa
                         return;
                     }
 
-                    _actionString = _actionString + " s " + transporter._id + " " + _order._rack.GetXXYYDH() + " " + transporter._loadedItems.Peek();
+                    _actionString = _actionString + " s " + transporter._id + " " + _order._rack.GetXXYYDH() + " " + transporter._loadedItems.Dequeue();
                     transporter._isUnloading = true;
                 }
                 _pickingTime++;
@@ -212,7 +212,7 @@ namespace Daiwa
                 if (id > 9 && Warehouse._Transporters.ContainsKey(id))
                 {
                     TransportRobot robot = (TransportRobot)Warehouse._Transporters[id];
-                    if (robot._path.Count == 0 && robot._state == this._state)
+                    if (robot._path.Count == 0 && robot._destination_point.Equals(_destination_point))
                         return robot;
                 }
             }
@@ -227,15 +227,24 @@ namespace Daiwa
                 case robot_state.pick:
                 case robot_state.slot:
                     if (_path.Count == 0)
+                    {
+                        Program.Print(_id + "do not reroute \n");
                         return false;
+                    }
+                    Program.Print(_id + "pick slot reroute to " + _destination_point + "\n");
                     _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
                     return true;
                 case robot_state.returning:
                     if (_path.Count == 0)
+                    {
+                        Program.Print(_id + "do not reroute \n");
                         return false;
+                    }
+                    Program.Print(_id + "return reroute to " + _destination_point + "\n");
                     _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
                     return true;
                 default:
+                    Program.Print(_id + "do not reroute \n");
                     return false;
             }
         }

@@ -61,13 +61,19 @@ namespace Daiwa
                 }
                 else // new location is obstructed
                 {
+                    _actionString += " n";
                     Robot another_robot = Warehouse._AllMovingRobots[robot_id];
-                    if (another_robot._path.Count == 0 || IsCollideWith(another_robot))
+                    if (another_robot._state == robot_state.free || another_robot._path.Count == 0)
+                        this.Reroute();
+                    else if (IsCollideWith(another_robot))
                     {
-                        Program.Print(_id + " is obstructed by " + robot_id + " at " + _path.Peek() + "\n");
-                        Reroute();
+                        Program.Print(_id + " is collide with " + robot_id + " at " + _path.Peek() + "\n");
+                        if(another_robot._state != robot_state.slot && another_robot._state != robot_state.pick)
+                            another_robot.Reroute();
+                        else
+                            Reroute();
                     }
-                    _actionString += " n"; 
+                   
                 }
             }
             else // we arrive at the destination
@@ -98,6 +104,16 @@ namespace Daiwa
                 case robot_state.slot:
                     return FindNewRouteToPick();
                 case robot_state.ship:
+                    if (_path.Count == 0)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        Program.Print(_id + "ship reroute to " + _destination_point + "\n");
+                        PrepareToShip();
+                        return true;
+                    }
                 case robot_state.receive:
                     if (_path.Count == 0)
                     {
@@ -106,7 +122,7 @@ namespace Daiwa
                     else
                     {
                         Program.Print(_id + "recieve reroute to " + _destination_point + "\n");
-                        _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
+                        PrepareToReceive();
                         return true;
                     }
                 case robot_state.returning:
@@ -175,7 +191,7 @@ namespace Daiwa
 
         public void PrepareToReceive()
         {
-            _destination_point = Warehouse._Receiver.GetReceivePoint(); ;
+            _destination_point = Warehouse._Receiver.GetReceivePoint();
             _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
             _state = robot_state.receive;
         }
@@ -261,7 +277,7 @@ namespace Daiwa
         public void FinishSlotting()
         {
             _isUnloading = false;
-            _loadedItems.Dequeue();
+           
             _order._quantity--;
 
             if (_loadedItems.Count == 0)
