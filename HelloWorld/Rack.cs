@@ -137,6 +137,23 @@ namespace Daiwa
             }
         }
 
+        public int GetNumberOfItem(string product_id)
+        {
+            if (_expectedPickQuantity > 0) // If rack is on picking order, avoid it to not cause traffic jam
+                return 0;
+
+            foreach (RackItem item in _itemList)
+            {
+                // Find the correct product 
+                if (item._productID.Equals(product_id))
+                {
+                    return item._quantity;
+                }
+            }
+
+            return 0;
+        }
+
         public void AddItem(string product_id)
         {
             _num_items++;

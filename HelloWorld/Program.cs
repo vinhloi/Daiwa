@@ -81,11 +81,11 @@ namespace Daiwa
                         break;
                     case "pick":
                         Print(input + "\n");
-                        //warehouse.Pick(values);
+                        warehouse.Pick(values);
                         break;
                     case "slot":
                         Print(input + "\n");
-                        warehouse.Slot(values);
+                        //warehouse.Slot(values);
                         warehouse.GenerateAction();
                         break;
                     case "0":

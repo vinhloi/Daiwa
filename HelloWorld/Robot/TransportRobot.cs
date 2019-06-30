@@ -64,11 +64,14 @@ namespace Daiwa
                     _actionString += " n";
                     Robot another_robot = Warehouse._AllMovingRobots[robot_id];
                     if (another_robot._state == robot_state.free || another_robot._path.Count == 0)
-                        this.Reroute();
+                    {
+                        Program.Print(_id + " is obstructed by " + robot_id + " at " + _path.Peek() + "\n");
+                        Reroute();
+                    }
                     else if (IsCollideWith(another_robot))
                     {
                         Program.Print(_id + " is collide with " + robot_id + " at " + _path.Peek() + "\n");
-                        if(another_robot._state != robot_state.slot && another_robot._state != robot_state.pick)
+                        if (another_robot._state != robot_state.slot && another_robot._state != robot_state.pick)
                             another_robot.Reroute();
                         else
                             Reroute();
@@ -173,7 +176,7 @@ namespace Daiwa
             ShippingRobot shipper = (ShippingRobot)Warehouse._Shippers[product._shipperID];
             _destination_point = shipper.GetShipPoint();
 
-            _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath, true);
+            _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
             _state = robot_state.ship;
         }
 
