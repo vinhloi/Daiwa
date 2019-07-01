@@ -259,7 +259,8 @@ namespace Daiwa
                 else
                 {
                     _state = robot_state.pick; // return to rack and continue loading item to ship
-                    FindNewRouteToPick();
+                    _destination_point = _order._rack.GetPickUpPoint();
+                    _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
                 }
             }
         }

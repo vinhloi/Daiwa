@@ -116,11 +116,20 @@ namespace Daiwa
 
         public static void Print(string text)
         {
+            //using (StreamWriter writetext = new StreamWriter("debug.txt", true))
+            //{
+            //    writetext.Write(text);
+            //}
             Console.Write(text);
         }
 
         public static void PrintLine(string text)
         {
+            //using (StreamWriter writetext = new StreamWriter("debug.txt", true))
+            //{
+            //    writetext.WriteLine(text);
+            //}
+
             Console.WriteLine(text);
         }
     }
