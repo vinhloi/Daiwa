@@ -374,7 +374,7 @@ namespace Daiwa
         {
             Byte id = 10;
 
-            // Init 30 transporters
+            // Init 12 transporters
             for (int i = 0; i < 4; i++)
             {
                 _Transporters.Add(id, new TransportRobot(77, 2 + i, id++));
@@ -382,61 +382,20 @@ namespace Daiwa
                 //_Transporters.Add(id, new TransportRobot(81, 2 + i, id++));
             }
 
-            // Init 33 Pickers
-            //_Pickers.Add(id, new PickingRobot(18, 26, id++));
-            //_Pickers.Add(id, new PickingRobot(18, 30, id++));
-            //_Pickers.Add(id, new PickingRobot(18, 36, id++));
-            //_Pickers.Add(id, new PickingRobot(18, 40, id++));
-            //_Pickers.Add(id, new PickingRobot(18, 44, id++));
-            //_Pickers.Add(id, new PickingRobot(47, 26, id++));
-            //_Pickers.Add(id, new PickingRobot(47, 30, id++));
-            //_Pickers.Add(id, new PickingRobot(47, 36, id++));
-            //_Pickers.Add(id, new PickingRobot(47, 40, id++));
-            //_Pickers.Add(id, new PickingRobot(47, 44, id++));
+            _Pickers.Add(id, new PickingRobot(117, 16, id++));
+            _Pickers.Add(id, new PickingRobot(117, 21, id++));
+            _Pickers.Add(id, new PickingRobot(119, 16, id++));
+            _Pickers.Add(id, new PickingRobot(119, 21, id++));
+            _Pickers.Add(id, new PickingRobot(46, 25, id++));
+            _Pickers.Add(id, new PickingRobot(46, 45, id++));
+            _Pickers.Add(id, new PickingRobot(155, 49, id++));
+            _Pickers.Add(id, new PickingRobot(155, 105, id++));
 
+            // Init 8 Hangers
             for (int i = 0; i < 8; i++)
             {
-                _Pickers.Add(id, new PickingRobot((84 + i * 8), 13, id++));
+                _Hangers.Add(id, new HangingRobot(65 + i * 10, 32, id++));
             }
-
-            //for (int i = 0; i < 7; i++)
-            //{
-            //    _Pickers.Add(id, new PickingRobot(155, (50 + i * 8), id++));
-            //}
-
-            //for (int i = 0; i < 9; i++)
-            //{
-            //    _Pickers.Add(id, new PickingRobot(133, (74 + i * 4), id++));
-            //}
-
-
-            // Init 23 Hangers
-            for (int i = 0; i < 8; i++)
-            {
-                _Hangers.Add(id, new HangingRobot(64 + i * 8, 32, id++));
-            }
-
-            //for (int i = 0; i < 3; i++)
-            //{
-            //    _Hangers.Add(id, new HangingRobot(86 + i * 4, 32, id++));
-            //}
-
-            //for (int i = 0; i < 5; i++)
-            //{
-            //    _Hangers.Add(id, new HangingRobot(100 + i * 4, 32, id++));
-            //}
-
-            //for (int i = 0; i < 3; i++)
-            //{
-            //    _Hangers.Add(id, new HangingRobot(122 + i * 4, 32, id++));
-            //}
-
-            //for (int i = 0; i < 8; i++)
-            //{
-            //    _Hangers.Add(id, new HangingRobot(136 + i * 4, 32, id++));
-            //}
-
-            //Program.Print(_Transporters.Count.ToString() + " ");
 
             foreach (KeyValuePair<int, Robot> entry in _Transporters)
             {
@@ -510,7 +469,7 @@ namespace Daiwa
                     Rack rack = FindRackToPick(order, out NumItemInRack);
                     if (rack == null)
                     {
-                        Program.Print("Can not find rack contain the product");
+                        Program.PrintLine("Can not find rack contain the product");
                         _PickOrders.Remove(order);
                         continue;
                     }
@@ -575,10 +534,10 @@ namespace Daiwa
                 }
             }
 
-            Program.Print("\n" + rack.GetPickUpPoint() + " avoid ");
-            foreach (Robot robot in _AllMovingRobots.Values)
-                if (robot._state != robot_state.free)
-                    Program.Print(" " + robot._location + robot._destination_point);
+            //Program.Print("\n" + rack.GetPickUpPoint() + " avoid ");
+            //foreach (Robot robot in _AllMovingRobots.Values)
+            //    if (robot._state != robot_state.free)
+            //        Program.Print(" " + robot._location + robot._destination_point);
             return true;
         }
 

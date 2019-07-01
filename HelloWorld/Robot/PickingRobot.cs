@@ -51,27 +51,26 @@ namespace Daiwa
                 }
                 else // new location is obstructed
                 {
+                    _actionString += " n";
                     Robot another_robot = Warehouse._AllMovingRobots[robot_id];
                     if (another_robot._path.Count == 0)// anther robot is stopping
                     {
+                        Program.Print(_id + " is obstructed by " + robot_id + " at " + _path.Peek() + "\n");
                         if (Warehouse._Transporters.ContainsKey(another_robot._id) && _destination_point.Equals(another_robot._destination_point))
                         {
-                            Program.Print(_id + " " + _path.Count + " Force " + another_robot._id + " " + another_robot._path.Count + "Rerout\n");
                             another_robot.Reroute();
                         }
                         else
                             Reroute();
                     }
-                    else // another robot is moving
+                    else if (IsCollideWith(another_robot))
                     {
-                        if (IsCollideWith(another_robot))
-                        {
-                            if (another_robot.Reroute() == false)
-                                this.Reroute();
-                        }
+                        Program.Print(_id + " is collide with " + robot_id + " at " + _path.Peek() + "\n");
+                        if (another_robot._state != robot_state.pick && another_robot._state != robot_state.slot)
+                            another_robot.Reroute();
+                        else
+                            Reroute();
                     }
-
-                    _actionString += " n";
                 }
             }
             else // we arrive at the destination

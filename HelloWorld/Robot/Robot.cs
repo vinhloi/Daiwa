@@ -71,6 +71,38 @@ namespace Daiwa
             _actionString += " f";
         }
 
+        public bool MakeUTurn()
+        {
+            if (_path.Count < 2)
+                return false;
+
+            Program.Print("\n" + _id + " make u turn");
+            Point collide_point = _path.Pop();
+            Point avoid_point = _path.Peek();
+
+            Stack<Point> avoid_path = AStarPathfinding.FindPath(_location, avoid_point, out _noPath);
+            if (avoid_path.Count == 0)
+            {
+                _path.Push(collide_point); // Can't find alternate path, keep the origin path
+                return false;
+            }
+
+            _path.Pop();
+            Stack<Point> reverse_path = new Stack<Point>();
+            while(avoid_path.Count > 0)
+            {
+                Program.Print(" " + avoid_path.Peek());
+                reverse_path.Push(avoid_path.Pop());
+            }
+
+            while(reverse_path.Count > 0)
+            {
+                _path.Push(reverse_path.Pop());
+            }
+
+            return true;
+        }
+
         protected bool Rotate()
         {
             Point new_location = _path.Peek();

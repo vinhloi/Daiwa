@@ -76,7 +76,6 @@ namespace Daiwa
                         else
                             Reroute();
                     }
-                   
                 }
             }
             else // we arrive at the destination

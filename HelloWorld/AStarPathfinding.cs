@@ -107,7 +107,7 @@ namespace Daiwa
             Program.Print("\nNo path from " + startPoint + " to " + endPoint + ":");
             foreach (Robot robot in Warehouse._AllMovingRobots.Values)
                 if (robot._state != robot_state.free)
-                    Program.Print("[" + robot._location + robot._path.Count + "]");
+                    Program.Print("[" + robot._id + robot._location + "]");
 
             noPath = true;
             return new Stack<Point>();
