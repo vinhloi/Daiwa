@@ -104,7 +104,10 @@ namespace Daiwa
             {
                 case robot_state.pick:
                 case robot_state.slot:
-                    return FindNewRouteToPick();
+                    _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
+                    if(_path.Count > 0)
+                        return true;
+                    return false;
                 case robot_state.ship:
                     if (_path.Count == 0)
                     {
@@ -144,7 +147,7 @@ namespace Daiwa
             }
         }
 
-        public bool FindNewRouteToPick()
+        public bool LeavePathForPicker()
         {
             int x = _destination_point.X;
             int y = _destination_point.Y;

@@ -58,7 +58,8 @@ namespace Daiwa
                         Program.Print(_id + " is obstructed by " + robot_id + " at " + _path.Peek() + "\n");
                         if (Warehouse._Transporters.ContainsKey(another_robot._id) && _destination_point.Equals(another_robot._destination_point))
                         {
-                            another_robot.Reroute();
+                            TransportRobot robot = (TransportRobot)another_robot;
+                            robot.LeavePathForPicker();
                         }
                         else
                             Reroute();

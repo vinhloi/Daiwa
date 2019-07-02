@@ -198,7 +198,7 @@ namespace Daiwa
 
         public virtual void PrepareToPick(Point pickup_point, Rack rack, string product_id, int quantity)
         {
-            _path = AStarPathfinding.FindPath(_location, pickup_point, out _noPath);
+            _path = AStarPathfinding.FindPath(_location, pickup_point, out _noPath, true);
             _state = robot_state.pick;
 
             _order._rack = rack;

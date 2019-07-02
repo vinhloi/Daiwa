@@ -381,16 +381,13 @@ namespace Daiwa
             Byte id = 10;
 
             // Init 12 transporters
-            for (int i = 0; i < 4; i++)
-            {
-                _Transporters.Add(id, new TransportRobot(81, 2 + i * 3, id++));
-            }
-
-            //_Transporters.Add(id, new TransportRobot(82, 25, id++));
-            //_Transporters.Add(id, new TransportRobot(82, 29, id++));
-            //_Transporters.Add(id, new TransportRobot(82, 35, id++));
-            //_Transporters.Add(id, new TransportRobot(82, 45, id++));
-
+            _Transporters.Add(id, new TransportRobot(46, 28, id++));
+            _Transporters.Add(id, new TransportRobot(46, 41, id++));
+            _Transporters.Add(id, new TransportRobot(83, 16, id++));
+            _Transporters.Add(id, new TransportRobot(83, 21, id++));
+            _Transporters.Add(id, new TransportRobot(83, 45, id++));
+            _Transporters.Add(id, new TransportRobot(83, 36, id++));
+            //_Transporters.Add(id, new TransportRobot(133, 2, id++));
 
             _Pickers.Add(id, new PickingRobot(117, 16, id++));
             _Pickers.Add(id, new PickingRobot(117, 21, id++));
