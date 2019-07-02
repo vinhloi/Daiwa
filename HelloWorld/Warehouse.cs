@@ -58,6 +58,8 @@ namespace Daiwa
         public static Dictionary<int, Robot> _Pickers;
         public static Dictionary<int, Robot> _Hangers;
         public static Dictionary<int, Robot> _Transporters;
+        public static Dictionary<int, Robot> _TransporterForPick;
+        public static Dictionary<int, Robot> _TransporterForSlot;
         public static Dictionary<int, Robot> _AllMovingRobots;
         public static ReceivingRobot _Receiver;
         public static Dictionary<int, Robot> _Shippers;
@@ -82,6 +84,8 @@ namespace Daiwa
             _Pickers = new Dictionary<int, Robot>();
             _Hangers = new Dictionary<int, Robot>();
             _Transporters = new Dictionary<int, Robot>();
+            _TransporterForPick = new Dictionary<int, Robot>();
+            _TransporterForSlot = new Dictionary<int, Robot>();
             _AllMovingRobots = new Dictionary<int, Robot>();
             _Receiver = null;
             _Shippers = new Dictionary<int, Robot>();
@@ -381,22 +385,20 @@ namespace Daiwa
             Byte id = 10;
 
             // Init 12 transporters
-            _Transporters.Add(id, new TransportRobot(46, 28, id++));
-            _Transporters.Add(id, new TransportRobot(46, 41, id++));
-            _Transporters.Add(id, new TransportRobot(83, 16, id++));
-            _Transporters.Add(id, new TransportRobot(83, 21, id++));
-            _Transporters.Add(id, new TransportRobot(83, 45, id++));
-            _Transporters.Add(id, new TransportRobot(83, 36, id++));
-            //_Transporters.Add(id, new TransportRobot(133, 2, id++));
+            _TransporterForPick.Add(id, new TransportRobot(46, 28, id++));
+            _TransporterForPick.Add(id, new TransportRobot(46, 41, id++));
+            _TransporterForPick.Add(id, new TransportRobot(83, 16, id++));
+            _TransporterForPick.Add(id, new TransportRobot(83, 21, id++));
+            _TransporterForPick.Add(id, new TransportRobot(83, 45, id++));
+            _TransporterForPick.Add(id, new TransportRobot(83, 36, id++));
 
-            //_Transporters.Add(id, new TransportRobot(50, 11, id++));
-            //_Transporters.Add(id, new TransportRobot(50, 23, id++));
-            //_Transporters.Add(id, new TransportRobot(60, 11, id++));
-            //_Transporters.Add(id, new TransportRobot(60, 23, id++));
+            for (int i = 0; i < 4; i++)
+            {
+                _TransporterForSlot.Add(id, new TransportRobot(77, 2 + i, id++));
+            }
 
             _Pickers.Add(id, new PickingRobot(46, 25, id++));
             _Pickers.Add(id, new PickingRobot(46, 45, id++));
-            // Init 6 Hangers
             for (int i = 0; i < 6; i++)
             {
                 _Pickers.Add(id, new HangingRobot(90 + i * 10, 14, id++));
@@ -408,8 +410,15 @@ namespace Daiwa
                 _Hangers.Add(id, new HangingRobot(65 + i * 10, 32, id++));
             }
 
-            foreach (KeyValuePair<int, Robot> entry in _Transporters)
+            foreach (KeyValuePair<int, Robot> entry in _TransporterForPick)
             {
+                _Transporters.Add(entry.Key, entry.Value);
+                _AllMovingRobots.Add(entry.Key, entry.Value);
+            }
+
+            foreach (KeyValuePair<int, Robot> entry in _TransporterForSlot)
+            {
+                _Transporters.Add(entry.Key, entry.Value);
                 _AllMovingRobots.Add(entry.Key, entry.Value);
             }
 
@@ -708,7 +717,28 @@ namespace Daiwa
         {
             TransportRobot select_robot = null;
             int current_distance = 0;
-            foreach (TransportRobot robot in _Transporters.Values)
+            foreach (TransportRobot robot in _TransporterForPick.Values)
+            {
+                if (robot._state == robot_state.free || robot._state == robot_state.returning)
+                {
+                    int new_distance = AStarPathfinding.ComputeHScore(robot._location.X, robot._location.Y, location.X, location.Y);
+
+                    if (select_robot == null || new_distance < current_distance)
+                    {
+                        select_robot = robot;
+                        current_distance = new_distance;
+                    }
+                }
+            }
+
+            return select_robot;
+        }
+
+        private TransportRobot FindTransporterToSlot(Point location)
+        {
+            TransportRobot select_robot = null;
+            int current_distance = 0;
+            foreach (TransportRobot robot in _TransporterForSlot.Values)
             {
                 if (robot._state == robot_state.free || robot._state == robot_state.returning)
                 {
@@ -745,7 +775,7 @@ namespace Daiwa
             {
                 while (_SlotOrders.Count > 0)
                 {
-                    TransportRobot transporter = FindTransporterToPick(_Receiver._location);
+                    TransportRobot transporter = FindTransporterToSlot(_Receiver._location);
                     if (transporter == null) // All transporters are busy
                     {
                         return;
