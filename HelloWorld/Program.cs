@@ -12,7 +12,8 @@ namespace Daiwa
     {
         static Process simproc;
         static Warehouse warehouse;
-
+        StreamWriter writetext = new StreamWriter("error.txt");
+        StreamWriter writetext1 = new StreamWriter("debug.txt", false);
         static void Main(string[] args)
         {
             warehouse = new Warehouse();
@@ -87,7 +88,7 @@ namespace Daiwa
                         break;
                     case "pick":
                         Print(input + "\n");
-                        //warehouse.Pick(values);
+                        warehouse.Pick(values);
                         break;
                     case "slot":
                         Print(input + "\n");
@@ -127,24 +128,24 @@ namespace Daiwa
         public static void Print(string text)
         {
 #if (DOCKER)
-            //using (StreamWriter writetext = new StreamWriter("debug.txt", true))
-            //{
-            //    writetext.Write(text);
-            //}
 #else
             Console.Write(text);
+            using (StreamWriter writetext = new StreamWriter("debug.txt", true))
+            {
+                writetext.Write(text);
+            }
 #endif
         }
 
         public static void PrintLine(string text)
         {
 #if (DOCKER)
-            //using (StreamWriter writetext = new StreamWriter("debug.txt", true))
-            //{
-            //    writetext.WriteLine(text);
-            //}
 #else
             Console.WriteLine(text);
+            using (StreamWriter writetext = new StreamWriter("debug.txt", true))
+            {
+                writetext.WriteLine(text);
+            }
 #endif
         }
     }

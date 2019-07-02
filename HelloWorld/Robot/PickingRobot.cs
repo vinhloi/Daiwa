@@ -175,7 +175,7 @@ namespace Daiwa
                         return;
                     }
 
-                    _actionString = _actionString + " s " + transporter._id + " " + _order._rack.GetXXYYDH() + " " + transporter._loadedItems.Dequeue();
+                    _actionString = _actionString + " s " + transporter._id + " " + _order._rack.GetXXYYDH() + " " + transporter._loadedItems.Peek();
                     transporter._isUnloading = true;
                 }
                 _pickingTime++;
@@ -184,7 +184,7 @@ namespace Daiwa
             {
                 _pickingTime = 0;
                 _order._quantity--;
-                _order._rack.AddItem(_order._productID);
+                _order._rack.AddItem(transporter._loadedItems.Dequeue());
                 transporter.FinishSlotting();
                 if (_order._quantity == 0)
                 {

@@ -392,7 +392,7 @@ namespace Daiwa
             _TransporterForPick.Add(id, new TransportRobot(83, 45, id++));
             _TransporterForPick.Add(id, new TransportRobot(83, 36, id++));
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
             {
                 _TransporterForSlot.Add(id, new TransportRobot(77, 2 + i, id++));
             }
@@ -401,7 +401,7 @@ namespace Daiwa
             _Pickers.Add(id, new PickingRobot(46, 45, id++));
             for (int i = 0; i < 6; i++)
             {
-                _Pickers.Add(id, new HangingRobot(90 + i * 10, 14, id++));
+                _Pickers.Add(id, new PickingRobot(90 + i * 10, 14, id++));
             }
 
             // Init 8 Hangers
@@ -522,13 +522,13 @@ namespace Daiwa
                     Program.Print("Handle pick " + order._productID + " " + rack._expectedPickQuantity);
                 }
             }
-            else
-            {
-                foreach (Robot robot in _AllMovingRobots.Values)
-                {
-                    robot.ForceReturnChargingPoint();
-                }
-            }
+            //else
+            //{
+            //    foreach (Robot robot in _AllMovingRobots.Values)
+            //    {
+            //        robot.ForceReturnChargingPoint();
+            //    }
+            //}
         }
 
         public static bool AvoidTrafficJam(Rack rack)
@@ -675,13 +675,13 @@ namespace Daiwa
                 int pos = (i + start) % searchList.Count;
                 Rack rack = searchList[pos];
 
-                NumItemInRack = rack.GetNumberOfItem(product._productID);
+                NumItemInRack = rack.GetNumberOfItem(order._productID);
 
                 // Find the correct product 
                 if (NumItemInRack > 0 && AvoidTrafficJam(rack))
                 {
                     result = rack;
-                    Program.Print("\nFind rack to pick: " + result._storageType + " " + result.GetPickUpPoint() + "\n");
+                    Program.Print("\nRack to pick: " + result._storageType + " " + result.GetXXYYDH() + " " + order._productID + ":" + NumItemInRack + "\n");
                     break;
                 }
             }
@@ -762,14 +762,14 @@ namespace Daiwa
                 _SlotOrders.Add(new Order(input[i], int.Parse(input[i + 1])));
             }
 
-            // Need to remove here
-            if (_time == 0 && _day != 0) // resume the activity of previous day
-            {
-                foreach (Robot robot in _AllMovingRobots.Values)
-                {
-                    robot.ResumeActivityLastDay();
-                }
-            }
+            //// Need to remove here
+            //if (_time == 0 && _day != 0) // resume the activity of previous day
+            //{
+            //    foreach (Robot robot in _AllMovingRobots.Values)
+            //    {
+            //        robot.ResumeActivityLastDay();
+            //    }
+            //}
 
             if (_time < 714)
             {
