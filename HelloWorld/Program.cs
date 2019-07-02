@@ -12,11 +12,17 @@ namespace Daiwa
     {
         static Process simproc;
         static Warehouse warehouse;
-        StreamWriter writetext = new StreamWriter("error.txt");
 
         static void Main(string[] args)
         {
             warehouse = new Warehouse();
+#if (DOCKER)
+            while (true)
+            {
+                string input = Console.In.ReadLine();
+                HandleInput(input);
+            }
+#else
             StartSimulator();
             //simproc.WaitForExit();
             while (true)
@@ -24,7 +30,7 @@ namespace Daiwa
                 string input = simproc.StandardOutput.ReadLine();
                 HandleInput(input);
             }
-
+#endif
         }
 
         static void StartSimulator()
@@ -111,26 +117,35 @@ namespace Daiwa
 
         public static void WriteOutput(string output)
         {
+#if (DOCKER)
+            Console.Out.Write(output);
+#else
             simproc.StandardInput.Write(output);
+#endif
         }
 
         public static void Print(string text)
         {
+#if (DOCKER)
             //using (StreamWriter writetext = new StreamWriter("debug.txt", true))
             //{
             //    writetext.Write(text);
             //}
+#else
             Console.Write(text);
+#endif
         }
 
         public static void PrintLine(string text)
         {
+#if (DOCKER)
             //using (StreamWriter writetext = new StreamWriter("debug.txt", true))
             //{
             //    writetext.WriteLine(text);
             //}
-
+#else
             Console.WriteLine(text);
+#endif
         }
     }
 }

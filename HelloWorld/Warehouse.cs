@@ -90,10 +90,16 @@ namespace Daiwa
             _SlotOrders = new List<Order>();
 
             rnd = new Random();
-
+#if (DOCKER)
+            LoadItemsFile("app/data/items.csv");
+            LoadItemCategoriesFile("app/data/item_categories.csv");
+            LoadMap("app/data/map.csv");
+#else
             LoadItemsFile("data\\items.csv");
             LoadItemCategoriesFile("data\\item_categories.csv");
             LoadMap("data\\map.csv");
+#endif
+
         }
 
         public void LoadMap(string map_file)
