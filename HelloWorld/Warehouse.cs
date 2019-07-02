@@ -62,8 +62,8 @@ namespace Daiwa
         public static ReceivingRobot _Receiver;
         public static Dictionary<int, Robot> _Shippers;
 
-        public List<Order> _PickOrders;
-        public List<Order> _SlotOrders;
+        public static List<Order> _PickOrders;
+        public static List<Order> _SlotOrders;
 
         public static Random rnd;
 
@@ -389,14 +389,18 @@ namespace Daiwa
             _Transporters.Add(id, new TransportRobot(83, 36, id++));
             //_Transporters.Add(id, new TransportRobot(133, 2, id++));
 
-            _Pickers.Add(id, new PickingRobot(117, 16, id++));
-            _Pickers.Add(id, new PickingRobot(117, 21, id++));
-            _Pickers.Add(id, new PickingRobot(119, 16, id++));
-            _Pickers.Add(id, new PickingRobot(119, 21, id++));
+            //_Transporters.Add(id, new TransportRobot(50, 11, id++));
+            //_Transporters.Add(id, new TransportRobot(50, 23, id++));
+            //_Transporters.Add(id, new TransportRobot(60, 11, id++));
+            //_Transporters.Add(id, new TransportRobot(60, 23, id++));
+
             _Pickers.Add(id, new PickingRobot(46, 25, id++));
             _Pickers.Add(id, new PickingRobot(46, 45, id++));
-            _Pickers.Add(id, new PickingRobot(155, 49, id++));
-            _Pickers.Add(id, new PickingRobot(155, 105, id++));
+            // Init 6 Hangers
+            for (int i = 0; i < 6; i++)
+            {
+                _Pickers.Add(id, new HangingRobot(90 + i * 10, 14, id++));
+            }
 
             // Init 8 Hangers
             for (int i = 0; i < 8; i++)
@@ -641,7 +645,7 @@ namespace Daiwa
             return result;
         }
 
-        private Rack FindRackToPick(Order order, out int NumItemInRack)
+        public static Rack FindRackToPick(Order order, out int NumItemInRack)
         {
             Rack result = null;
             NumItemInRack = 0;
@@ -807,6 +811,24 @@ namespace Daiwa
             }
             return null;
         }
+
+        public static Order FindNextPickOrder(TransportRobot robot)
+        {
+            if (_PickOrders.Count == 0)
+                return null;
+
+            string product_id = robot._loadedItems.Peek();
+            Product current_product = new Product(_DicItems[product_id]);
+
+            foreach (Order order in _PickOrders)
+            {
+                Product another_product = new Product(_DicItems[order._productID]);
+                if (another_product._shipperID == current_product._shipperID)
+                    return order;
+            }
+            return null;
+        }
+
 
         public void GenerateAction()
         {
