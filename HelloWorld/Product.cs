@@ -29,7 +29,7 @@ namespace Daiwa
             }
             catch (Exception e)
             {
-                Program.Print(e.Message);
+                //Program.Print(e.Message);
             }
         }
     }

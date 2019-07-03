@@ -15,19 +15,22 @@ namespace Daiwa
         static bool running = true;
         static void Main(string[] args)
         {
+            StartSimulator();
+            var watch = Stopwatch.StartNew();
             warehouse = new Warehouse();
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+            PrintLine("execution time: " + elapsedMs);
 #if (DOCKER)
-            StreamWriter writetext = new StreamWriter("app/error.txt");
-            StreamWriter writetext1 = new StreamWriter("app/debug.txt", false);
             while (running)
             {
                 string input = Console.In.ReadLine();
                 HandleInput(input);
             }
 #else
-            StreamWriter writetext = new StreamWriter("error.txt", false);
-            StreamWriter writetext1 = new StreamWriter("debug.txt", false);
-            StartSimulator();
+            //StreamWriter writetext = new StreamWriter("error.txt", false);
+            //StreamWriter writetext1 = new StreamWriter("debug.txt", false);
+            
             while (true)
             {
                 string input = simproc.StandardOutput.ReadLine();
@@ -83,8 +86,12 @@ namespace Daiwa
                 switch (values[0])
                 {
                     case "init":
+                        var watch = Stopwatch.StartNew();
                         warehouse.Store(values);
                         warehouse.SpecifyRobotInitialPosition();
+                        watch.Stop();
+                        var elapsedMs = watch.ElapsedMilliseconds;
+                        PrintLine("init time: " + elapsedMs);
                         break;
                     case "pick":
                         Print(input + "\n");
@@ -108,7 +115,7 @@ namespace Daiwa
                     default:
                         Print(input + "\n");
 #if (DOCKER)
-                        using (StreamWriter writetext = new StreamWriter("app/output.txt", false))
+                        //using (StreamWriter writetext = new StreamWriter("app/output.txt", false))
 #else
                         using (StreamWriter writetext = new StreamWriter("output.txt", false))
 #endif
@@ -133,10 +140,10 @@ namespace Daiwa
         public static void Print(string text)
         {
 #if (DOCKER)
-            using (StreamWriter writetext = new StreamWriter("app/debug.txt", true))
-            {
-                writetext.Write(text);
-            }
+            //using (StreamWriter writetext = new StreamWriter("app/debug.txt", true))
+            //{
+            //    writetext.Write(text);
+            //}
 #else
             using (StreamWriter writetext = new StreamWriter("debug.txt", true))
             {
@@ -149,10 +156,10 @@ namespace Daiwa
         public static void PrintLine(string text)
         {
 #if (DOCKER)
-            using (StreamWriter writetext = new StreamWriter("app/debug.txt", true))
-            {
-                writetext.WriteLine(text);
-            }
+            //using (StreamWriter writetext = new StreamWriter("app/debug.txt", true))
+            //{
+            //    writetext.WriteLine(text);
+            //}
 #else
             using (StreamWriter writetext = new StreamWriter("debug.txt", true))
             {

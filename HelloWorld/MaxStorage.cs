@@ -27,7 +27,7 @@ namespace Daiwa
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                //Console.WriteLine(e.ToString());
             }
         }
     }

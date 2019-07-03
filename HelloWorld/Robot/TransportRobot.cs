@@ -174,7 +174,7 @@ namespace Daiwa
 
         public void PrepareToShip()
         {
-            Product product = new Product(Warehouse._DicItems[_loadedItems.Peek()]);
+            Product product = Warehouse._DicItems[_loadedItems.Peek()];
             ShippingRobot shipper = (ShippingRobot)Warehouse._Shippers[product._shipperID];
             _destination_point = shipper.GetShipPoint();
 

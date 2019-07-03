@@ -43,8 +43,8 @@ namespace Daiwa
         public static Byte[,] Map;
         public int _numRows;
         public int _numCols;
-        public static Dictionary<string, string> _DicItems;   // Product information
-        public static Dictionary<string, string> _DicMaxStorage; // Max storage of products
+        public static Dictionary<string, Product> _DicItems;   // Product information
+        public static Dictionary<string, MaxStorage> _DicMaxStorage; // Max storage of products
 
         // List of racks
         public static List<Rack> _generalRackList; // racks contain product
@@ -72,8 +72,8 @@ namespace Daiwa
             _numRows = 0;
             _numCols = 0;
             Map = null;
-            _DicItems = new Dictionary<string, string>();
-            _DicMaxStorage = new Dictionary<string, string>();
+            _DicItems = new Dictionary<string, Product>();
+            _DicMaxStorage = new Dictionary<string, MaxStorage>();
             _generalRackList = new List<Rack>();
             _hangerRackList = new List<Rack>();
             _generalEmptyRacksList = new List<Rack>();
@@ -184,28 +184,28 @@ namespace Daiwa
         {
             using (var reader = new StreamReader(items_file))
             {
+                reader.ReadLine(); // remove the first line
                 while (!reader.EndOfStream)
                 {
                     var line = reader.ReadLine();
-                    var values = line.Split(',');
-
-                    _DicItems.Add(values[1], line);
+                    Product product = new Product(line);
+                    if (product._productID != null)
+                        _DicItems.Add(product._productID, product);
                 }
             }
         }
 
         public void LoadItemCategoriesFile(string item_categories_file)
         {
-            Program.Print("LoadItemCategoriesFile\n");
-
             using (var reader = new StreamReader(item_categories_file))
             {
+                reader.ReadLine();
                 while (!reader.EndOfStream)
                 {
                     var line = reader.ReadLine();
-                    var values = line.Split(',');
-
-                    _DicMaxStorage.Add(values[0], line);
+                    MaxStorage storage = new MaxStorage(line);
+                    if (storage._productType != null)
+                        _DicMaxStorage.Add(storage._productType, storage);
                 }
             }
         }
@@ -221,14 +221,14 @@ namespace Daiwa
                 string product_id = input[i];
                 int input_quantity = int.Parse(input[i + 1]);
                 count++;
-                Product product = new Product(_DicItems[product_id]);
+                Product product = _DicItems[product_id];
                 if (product == null)
                 {
                     Program.Print("Can not find product info");
                     continue;
                 }
 
-                MaxStorage max_storage_info = new MaxStorage(_DicMaxStorage[product._productType]);
+                MaxStorage max_storage_info = _DicMaxStorage[product._productType];
                 if (max_storage_info == null)
                 {
                     Program.Print("Can not find max storage");
@@ -293,7 +293,6 @@ namespace Daiwa
 
                 // Find empty spot in the racks which contain product
                 int start = rnd.Next(_generalRackList.Count);
-                // Find empty spot in the racks which contain product
                 for (int i = 0; i < _generalRackList.Count; i++)
                 {
                     int pos = (i + start) % _generalRackList.Count;
@@ -386,9 +385,9 @@ namespace Daiwa
             _TransporterForPick.Add(id, new TransportRobot(46, 33, id++));
             _TransporterForPick.Add(id, new TransportRobot(62, 31, id++));
             _TransporterForPick.Add(id, new TransportRobot(83, 13, id++));
-            _TransporterForPick.Add(id, new TransportRobot(83, 22, id++));
-            _TransporterForPick.Add(id, new TransportRobot(83, 31, id++));
-            _TransporterForPick.Add(id, new TransportRobot(83, 33, id++));
+            //_TransporterForPick.Add(id, new TransportRobot(83, 22, id++));
+            //_TransporterForPick.Add(id, new TransportRobot(83, 31, id++));
+            //_TransporterForPick.Add(id, new TransportRobot(83, 33, id++));
 
             for (int i = 0; i < 3; i++)
             {
@@ -573,8 +572,8 @@ namespace Daiwa
 
         public static Rack FindRackToSlot(String product_id, int quantity)
         {
-            Product product_info = new Product(_DicItems[product_id]);
-            MaxStorage max_storage_info = new MaxStorage(_DicMaxStorage[product_info._productType]);
+            Product product_info = _DicItems[product_id];
+            MaxStorage max_storage_info = _DicMaxStorage[product_info._productType];
 
             Rack result = null;
 
@@ -675,7 +674,7 @@ namespace Daiwa
                 return result;
             }
 
-            Product product = new Product(_DicItems[order._productID]);
+            Product product = _DicItems[order._productID];
             List<Rack> searchList = product._storageType.Equals("fold") ? _generalRackList : _hangerRackList;
 
             int start = rnd.Next(searchList.Count);
@@ -826,12 +825,12 @@ namespace Daiwa
             }
 
             string product_id = robot._expectedReceiveItems.Peek();
-            Product current_product = new Product(_DicItems[product_id]);
+            Product current_product = _DicItems[product_id];
             if (current_product._storageType.Equals("fold"))
             {
                 foreach (Order order in _SlotOrders)
                 {
-                    Product another_product = new Product(_DicItems[order._productID]);
+                    Product another_product = _DicItems[order._productID];
 
                     if (another_product._storageType.Equals(current_product._storageType) &&
                         another_product._productType.Equals(current_product._productType) &&
@@ -843,7 +842,7 @@ namespace Daiwa
             {
                 foreach (Order order in _SlotOrders)
                 {
-                    Product another_product = new Product(_DicItems[order._productID]);
+                    Product another_product = _DicItems[order._productID];
                     if (another_product._storageType.Equals(current_product._storageType) &&
                         another_product._shipperID == current_product._shipperID)
                         return order;
@@ -858,11 +857,11 @@ namespace Daiwa
                 return null;
 
             string product_id = robot._loadedItems.Peek();
-            Product current_product = new Product(_DicItems[product_id]);
+            Product current_product = _DicItems[product_id];
 
             foreach (Order order in _PickOrders)
             {
-                Product another_product = new Product(_DicItems[order._productID]);
+                Product another_product = _DicItems[order._productID];
                 if (another_product._shipperID == current_product._shipperID)
                     return order;
             }
