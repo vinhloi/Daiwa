@@ -1,7 +1,7 @@
-﻿using System;
+﻿//#define DOCKER
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,20 +12,22 @@ namespace Daiwa
     {
         static Process simproc;
         static Warehouse warehouse;
-        StreamWriter writetext = new StreamWriter("error.txt");
-        StreamWriter writetext1 = new StreamWriter("debug.txt", false);
+        static bool running = true;
         static void Main(string[] args)
         {
             warehouse = new Warehouse();
 #if (DOCKER)
-            while (true)
+            StreamWriter writetext = new StreamWriter("app/error.txt");
+            StreamWriter writetext1 = new StreamWriter("app/debug.txt", false);
+            while (running)
             {
                 string input = Console.In.ReadLine();
                 HandleInput(input);
             }
 #else
+            StreamWriter writetext = new StreamWriter("error.txt", false);
+            StreamWriter writetext1 = new StreamWriter("debug.txt", false);
             StartSimulator();
-            //simproc.WaitForExit();
             while (true)
             {
                 string input = simproc.StandardOutput.ReadLine();
@@ -59,14 +61,12 @@ namespace Daiwa
                     {
                         writetext.WriteLine(DateTime.Now.ToString("h:mm:ss ") + errorLine.Data);
                     }
+                    running = false;
                 }
             };
 
-            //simproc.OutputDataReceived += new DataReceivedEventHandler(SimulatorOutputDataHandler);
-
             simproc.Start();
             simproc.BeginErrorReadLine();
-            //simproc.BeginOutputReadLine();
         }
 
         private static void SimulatorOutputDataHandler(object sendingProcess,
@@ -107,10 +107,15 @@ namespace Daiwa
                         break;
                     default:
                         Print(input + "\n");
-                        using (StreamWriter writetext = new StreamWriter("output.txt", true))
+#if (DOCKER)
+                        using (StreamWriter writetext = new StreamWriter("app/output.txt", false))
+#else
+                        using (StreamWriter writetext = new StreamWriter("output.txt", false))
+#endif
                         {
                             writetext.WriteLine(input);
                         }
+                        running = false;
                         break;
                 }
             }
@@ -128,24 +133,32 @@ namespace Daiwa
         public static void Print(string text)
         {
 #if (DOCKER)
+            using (StreamWriter writetext = new StreamWriter("app/debug.txt", true))
+            {
+                writetext.Write(text);
+            }
 #else
-            Console.Write(text);
             using (StreamWriter writetext = new StreamWriter("debug.txt", true))
             {
                 writetext.Write(text);
             }
+            Console.Write(text);
 #endif
         }
 
         public static void PrintLine(string text)
         {
 #if (DOCKER)
+            using (StreamWriter writetext = new StreamWriter("app/debug.txt", true))
+            {
+                writetext.WriteLine(text);
+            }
 #else
-            Console.WriteLine(text);
             using (StreamWriter writetext = new StreamWriter("debug.txt", true))
             {
                 writetext.WriteLine(text);
             }
+            Console.WriteLine(text);
 #endif
         }
     }

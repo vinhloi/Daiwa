@@ -1,11 +1,9 @@
-﻿using System;
+﻿//#define DOCKER
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Data.Odbc;
 using System.IO;
-using System.Collections;
-using System.Diagnostics;
 using System.Drawing;
 
 namespace Daiwa
@@ -385,20 +383,20 @@ namespace Daiwa
             Byte id = 10;
 
             // Init 12 transporters
-            _TransporterForPick.Add(id, new TransportRobot(46, 28, id++));
-            _TransporterForPick.Add(id, new TransportRobot(46, 41, id++));
-            _TransporterForPick.Add(id, new TransportRobot(83, 16, id++));
-            _TransporterForPick.Add(id, new TransportRobot(83, 21, id++));
-            _TransporterForPick.Add(id, new TransportRobot(83, 45, id++));
-            _TransporterForPick.Add(id, new TransportRobot(83, 36, id++));
+            _TransporterForPick.Add(id, new TransportRobot(46, 33, id++));
+            _TransporterForPick.Add(id, new TransportRobot(62, 31, id++));
+            _TransporterForPick.Add(id, new TransportRobot(83, 13, id++));
+            _TransporterForPick.Add(id, new TransportRobot(83, 22, id++));
+            _TransporterForPick.Add(id, new TransportRobot(83, 31, id++));
+            _TransporterForPick.Add(id, new TransportRobot(83, 33, id++));
 
             for (int i = 0; i < 3; i++)
             {
                 _TransporterForSlot.Add(id, new TransportRobot(77, 2 + i, id++));
             }
 
-            _Pickers.Add(id, new PickingRobot(46, 25, id++));
-            _Pickers.Add(id, new PickingRobot(46, 45, id++));
+            _Pickers.Add(id, new PickingRobot(47, 1, id++));
+            _Pickers.Add(id, new PickingRobot(18, 1, id++));
             for (int i = 0; i < 6; i++)
             {
                 _Pickers.Add(id, new PickingRobot(90 + i * 10, 14, id++));
@@ -482,7 +480,7 @@ namespace Daiwa
             {
                 while (_PickOrders.Count > 0)
                 {
-                    Order order = _PickOrders[0];
+                    Order order = FindOrderToHandle();
                     int NumItemInRack = 0;
 
                     // Find rack contains order product
@@ -529,6 +527,18 @@ namespace Daiwa
             //        robot.ForceReturnChargingPoint();
             //    }
             //}
+        }
+
+        public Order FindOrderToHandle()
+        {
+            Order result = _PickOrders[0];
+            foreach(Order order in _PickOrders)
+            {
+                if (order._quantity > result._quantity)
+                    result = order;
+            }
+
+            return result;
         }
 
         public static bool AvoidTrafficJam(Rack rack)
