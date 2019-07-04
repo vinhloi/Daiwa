@@ -262,9 +262,8 @@ namespace Daiwa
                     rack._num_items += stored_quantity;
                     input_quantity -= stored_quantity;
 
-                    string store_product_command = " " + product_id + " " + rack.GetXXYYDH();
-                    for (int j = 0; j < stored_quantity; j++)
-                        Program.WriteOutput(store_product_command);
+                    string store_product_command = String.Concat(Enumerable.Repeat(" " + product_id + " " + rack.GetXXYYDH(), stored_quantity));
+                    Program.WriteOutput(store_product_command);
                 }
             }
 
@@ -384,7 +383,7 @@ namespace Daiwa
             // Init 12 transporters
             _TransporterForPick.Add(id, new TransportRobot(46, 33, id++));
             _TransporterForPick.Add(id, new TransportRobot(62, 31, id++));
-            _TransporterForPick.Add(id, new TransportRobot(83, 13, id++));
+            //_TransporterForPick.Add(id, new TransportRobot(83, 13, id++));
             //_TransporterForPick.Add(id, new TransportRobot(83, 22, id++));
             //_TransporterForPick.Add(id, new TransportRobot(83, 31, id++));
             //_TransporterForPick.Add(id, new TransportRobot(83, 33, id++));
@@ -768,7 +767,16 @@ namespace Daiwa
         {
             for (int i = 1; i < input.Count; i += 2) // Add new order into the list
             {
-                _SlotOrders.Add(new Order(input[i], int.Parse(input[i + 1])));
+                Order new_order = new Order(input[i], int.Parse(input[i + 1]));
+                Order existing_order = _SlotOrders.FirstOrDefault(x => x._productID.Equals(new_order._productID));
+                if (existing_order != null)
+                {
+                    existing_order._quantity += new_order._quantity;
+                }
+                else
+                {
+                    _SlotOrders.Add(new_order);
+                }
             }
 
             //// Need to remove here

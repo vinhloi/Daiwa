@@ -15,13 +15,8 @@ namespace Daiwa
         static bool running = true;
         static void Main(string[] args)
         {
-            StartSimulator();
-            var watch = Stopwatch.StartNew();
-            warehouse = new Warehouse();
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-            PrintLine("execution time: " + elapsedMs);
 #if (DOCKER)
+            warehouse = new Warehouse();
             while (running)
             {
                 string input = Console.In.ReadLine();
@@ -30,7 +25,12 @@ namespace Daiwa
 #else
             //StreamWriter writetext = new StreamWriter("error.txt", false);
             //StreamWriter writetext1 = new StreamWriter("debug.txt", false);
-            
+            StartSimulator();
+            var watch = Stopwatch.StartNew();
+            warehouse = new Warehouse();
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+            PrintLine("execution time: " + elapsedMs);
             while (true)
             {
                 string input = simproc.StandardOutput.ReadLine();
@@ -117,11 +117,11 @@ namespace Daiwa
 #if (DOCKER)
                         //using (StreamWriter writetext = new StreamWriter("app/output.txt", false))
 #else
-                        using (StreamWriter writetext = new StreamWriter("output.txt", false))
-#endif
+                        using (StreamWriter writetext = new StreamWriter("output.txt", true))
                         {
                             writetext.WriteLine(input);
                         }
+#endif
                         running = false;
                         break;
                 }
