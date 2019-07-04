@@ -383,12 +383,12 @@ namespace Daiwa
             // Init 12 transporters
             _TransporterForPick.Add(id, new TransportRobot(46, 33, id++));
             _TransporterForPick.Add(id, new TransportRobot(62, 31, id++));
-            //_TransporterForPick.Add(id, new TransportRobot(83, 13, id++));
-            //_TransporterForPick.Add(id, new TransportRobot(83, 22, id++));
-            //_TransporterForPick.Add(id, new TransportRobot(83, 31, id++));
-            //_TransporterForPick.Add(id, new TransportRobot(83, 33, id++));
+            _TransporterForPick.Add(id, new TransportRobot(83, 13, id++));
+            _TransporterForPick.Add(id, new TransportRobot(83, 22, id++));
+            _TransporterForPick.Add(id, new TransportRobot(83, 31, id++));
+            _TransporterForPick.Add(id, new TransportRobot(83, 33, id++));
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 4; i++)
             {
                 _TransporterForSlot.Add(id, new TransportRobot(77, 2 + i, id++));
             }

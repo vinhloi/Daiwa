@@ -69,38 +69,88 @@ namespace Daiwa
         {
             SetLocation(_path.Pop());
             _actionString += " f";
+
+            if(_path.Count > 0)
+            {
+                Byte robot_id = Warehouse.ValueAt(_path.Peek());
+                if (robot_id == 0) // No robot standing at this tile, road is clear
+                {
+                    return;
+                }
+
+                Robot another_robot = Warehouse._AllMovingRobots[robot_id];
+                if (IsCollideWith(another_robot))
+                {
+                    if (another_robot._state == robot_state.slot || another_robot._state == robot_state.pick)
+                        another_robot.AvoidToLeavePath();
+                }
+            }
+
+            
         }
 
-        public bool MakeUTurn()
+        public bool AvoidToLeavePath()
         {
-            if (_path.Count < 2)
-                return false;
-
-            Program.Print("\n" + _id + " make u turn");
-            Point collide_point = _path.Pop();
-            Point avoid_point = _path.Peek();
-
-            Stack<Point> avoid_path = AStarPathfinding.FindPath(_location, avoid_point, out _noPath);
-            if (avoid_path.Count == 0)
+            Point LeftTile;
+            Point RightTile;
+            Point BackTile;
+            Point FrontTile;
+            switch (_direction)
             {
-                _path.Push(collide_point); // Can't find alternate path, keep the origin path
-                return false;
+                case Direction.Up:
+                    LeftTile = new Point(_location.X - 1, _location.Y);
+                    RightTile = new Point(_location.X + 1, _location.Y);
+                    BackTile = new Point(_location.X, _location.Y + 1);
+                    FrontTile = new Point(_location.X, _location.Y - 1);
+                    break;
+                case Direction.Down:
+                    LeftTile = new Point(_location.X + 1, _location.Y);
+                    RightTile = new Point(_location.X - 1, _location.Y);
+                    BackTile = new Point(_location.X, _location.Y - 1);
+                    FrontTile = new Point(_location.X, _location.Y + 1);
+                    break;
+                case Direction.Left:
+                    LeftTile = new Point(_location.X, _location.Y + 1);
+                    RightTile = new Point(_location.X, _location.Y - 1);
+                    BackTile = new Point(_location.X + 1, _location.Y);
+                    FrontTile = new Point(_location.X - 1, _location.Y);
+                    break;
+                case Direction.Right:
+                    LeftTile = new Point(_location.X, _location.Y - 1);
+                    RightTile = new Point(_location.X, _location.Y + 1);
+                    BackTile = new Point(_location.X - 1, _location.Y);
+                    FrontTile = new Point(_location.X + 1, _location.Y);
+                    break;
+                default:
+                    return false;
+            }
+           
+            if (Warehouse.ValueAt(LeftTile) == 0)
+            {
+                _path.Push(_location);
+                _path.Push(LeftTile);
+                return true;
+            }
+            else if (Warehouse.ValueAt(RightTile) == 0)
+            {
+                _path.Push(_location);
+                _path.Push(RightTile);
+                return true;
+            }
+            else if (Warehouse.ValueAt(BackTile) == 0)
+            {
+                _path.Push(_location);
+                _path.Push(BackTile);
+                return true;
+            }
+            else if (Warehouse.ValueAt(FrontTile) == 0)
+            {
+                _path.Push(_location);
+                _path.Push(FrontTile);
+                return true;
             }
 
-            _path.Pop();
-            Stack<Point> reverse_path = new Stack<Point>();
-            while(avoid_path.Count > 0)
-            {
-                Program.Print(" " + avoid_path.Peek());
-                reverse_path.Push(avoid_path.Pop());
-            }
-
-            while(reverse_path.Count > 0)
-            {
-                _path.Push(reverse_path.Pop());
-            }
-
-            return true;
+            return false;
         }
 
         protected bool Rotate()
@@ -246,7 +296,10 @@ namespace Daiwa
 
         public bool IsCollideWith(Robot another_robot)
         {
-            if (_location.Equals(another_robot._path.Peek()))
+            if (another_robot._path.Count == 0 || _path.Count == 0)
+                return false;
+
+            if (_location.Equals(another_robot._path.Peek()) && _path.Peek().Equals(another_robot._location))
             {
                 return true;
             }

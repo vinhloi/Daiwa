@@ -71,8 +71,8 @@ namespace Daiwa
                     else if (IsCollideWith(another_robot))
                     {
                         Program.Print(_id + " is collide with " + robot_id + " at " + _path.Peek() + "\n");
-                        if (another_robot._state != robot_state.slot && another_robot._state != robot_state.pick)
-                            another_robot.Reroute();
+                        if (another_robot._state == robot_state.slot || another_robot._state == robot_state.pick)
+                            another_robot.AvoidToLeavePath();
                         else
                             Reroute();
                     }
