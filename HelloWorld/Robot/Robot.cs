@@ -39,6 +39,8 @@ namespace Daiwa
         public Order _order;
         public string type;
         public bool _noPath; // Indicate no path to go from _location to _destination_point
+        public bool _isLoading = false;
+        public bool _isUnloading = false;
 
         public Robot(int x, int y, Byte id)
         {
@@ -52,7 +54,7 @@ namespace Daiwa
             _backUpState = robot_state.free;
             _state = robot_state.free;
             _path = new Stack<Point>();
-            Warehouse.Map[y, x] = id;
+            Warehouse.Map[y, x] = 1;
 
             _order = new Order();
             _noPath = false;
@@ -73,7 +75,7 @@ namespace Daiwa
             if(_path.Count > 0)
             {
                 Byte robot_id = Warehouse.ValueAt(_path.Peek());
-                if (robot_id == 0) // No robot standing at this tile, road is clear
+                if (robot_id == 0 || robot_id == 1) // No robot standing at this tile, road is clear
                 {
                     return;
                 }
@@ -91,6 +93,9 @@ namespace Daiwa
 
         public bool AvoidToLeavePath()
         {
+            if (_isLoading == true || _isUnloading == true)
+                return false;
+
             Point LeftTile;
             Point RightTile;
             Point BackTile;
@@ -230,6 +235,7 @@ namespace Daiwa
             // Update Map Tile
             Warehouse.Map[_location.Y, _location.X] = 0;
             Warehouse.Map[new_location.Y, new_location.X] = _id;
+            Warehouse.Map[_chargingPoint.Y, _chargingPoint.X] = 1;
 
             // update location
             _location.X = new_location.X;

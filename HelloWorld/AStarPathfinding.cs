@@ -129,7 +129,7 @@ namespace Daiwa
             if(ignoreRobot)
             {
                 // retur Adjacent Squares which are moveable and ignore robot position (value != 1)
-                return proposedLocations.Where(l => Warehouse.Map[l.Y, l.X] != 1).ToList();
+                return proposedLocations.Where(l => Warehouse.Map[l.Y, l.X] != 1 || (l.X == goal.X && l.Y == goal.Y) || (l.X == goal.X && l.Y == goal.Y)).ToList();
             }
             else
             {
