@@ -72,7 +72,7 @@ namespace Daiwa
             SetLocation(_path.Pop());
             _actionString += " f";
 
-            if(_path.Count > 0)
+            if (_path.Count > 0)
             {
                 Byte robot_id = Warehouse.ValueAt(_path.Peek());
                 if (robot_id == 0 || robot_id == 1) // No robot standing at this tile, road is clear
@@ -83,12 +83,11 @@ namespace Daiwa
                 Robot another_robot = Warehouse._AllMovingRobots[robot_id];
                 if (IsCollideWith(another_robot))
                 {
+                    Program.Print(_id + " is collide with " + robot_id + " at " + _path.Peek() + "\n");
                     if (another_robot._state == robot_state.slot || another_robot._state == robot_state.pick)
                         another_robot.AvoidToLeavePath();
                 }
             }
-
-            
         }
 
         public bool AvoidToLeavePath()
@@ -134,24 +133,28 @@ namespace Daiwa
             {
                 _path.Push(_location);
                 _path.Push(LeftTile);
+                Program.PrintLine( _id + "Move to left side" + _location + LeftTile);
                 return true;
             }
             else if (Warehouse.ValueAt(RightTile) == 0)
             {
                 _path.Push(_location);
                 _path.Push(RightTile);
+                Program.PrintLine(_id + "Move to right side" + _location + RightTile);
                 return true;
             }
             else if (Warehouse.ValueAt(BackTile) == 0)
             {
                 _path.Push(_location);
                 _path.Push(BackTile);
+                Program.PrintLine(_id + "Move to back side" + _location + BackTile);
                 return true;
             }
             else if (Warehouse.ValueAt(FrontTile) == 0)
             {
                 _path.Push(_location);
                 _path.Push(FrontTile);
+                Program.PrintLine(_id + "Move to front side" + _location + FrontTile);
                 return true;
             }
 
@@ -195,7 +198,9 @@ namespace Daiwa
                 case 2: //opposite direction, rotate clock wise
                 case -2:
                     _actionString += " r";
-                    _direction = (Direction)(((int)_direction + 1) % 4);
+                    _direction++;
+                    if ((int)_direction > 4)
+                        _direction -= 4;
                     return true;
                 default:
                     return false;

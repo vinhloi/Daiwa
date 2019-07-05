@@ -388,6 +388,10 @@ namespace Daiwa
             _TransporterForPick.Add(id, new TransportRobot(83, 31, id++));
             _TransporterForPick.Add(id, new TransportRobot(83, 33, id++));
 
+            _TransporterForPick.Add(id, new TransportRobot(134, 47, id++));
+            //_TransporterForPick.Add(id, new TransportRobot(144, 47, id++));
+            //_TransporterForPick.Add(id, new TransportRobot(156, 47, id++));
+
             for (int i = 0; i < 4; i++)
             {
                 _TransporterForSlot.Add(id, new TransportRobot(77, 2 + i, id++));
@@ -395,6 +399,8 @@ namespace Daiwa
 
             _Pickers.Add(id, new PickingRobot(47, 1, id++));
             _Pickers.Add(id, new PickingRobot(18, 1, id++));
+            _Pickers.Add(id, new PickingRobot(81, 4, id++));
+            //_Pickers.Add(id, new PickingRobot(80, 9, id++));
             for (int i = 0; i < 6; i++)
             {
                 _Pickers.Add(id, new PickingRobot(90 + i * 10, 14, id++));

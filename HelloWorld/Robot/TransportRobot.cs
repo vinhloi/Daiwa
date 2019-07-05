@@ -63,7 +63,7 @@ namespace Daiwa
                 {
                     _actionString += " n";
                     Robot another_robot = Warehouse._AllMovingRobots[robot_id];
-                    if (another_robot._state == robot_state.free || another_robot._path.Count == 0)
+                    if (another_robot._path.Count == 0)
                     {
                         Program.Print(_id + " is obstructed by " + robot_id + " at " + _path.Peek() + "\n");
                         Reroute();
