@@ -10,8 +10,6 @@ namespace Daiwa
         public const int _maxItem = 5;
         public Queue<string> _loadedItems;
         public Queue<string> _expectedReceiveItems;
-        public bool _isLoading = false;
-        public bool _isUnloading = false;
 
         public TransportRobot(int x, int y, Byte id) : base(x, y, id)
         {
@@ -65,14 +63,18 @@ namespace Daiwa
                     Robot another_robot = Warehouse._AllMovingRobots[robot_id];
                     if (another_robot._path.Count == 0)
                     {
-                        Program.Print(_id + " is obstructed by " + robot_id + " at " + _path.Peek() + "\n");
-                        Reroute();
+                        Program.Print(_id + " is obstructed by " + robot_id + another_robot._state + " at " + _path.Peek() + "\n");
+                        if (another_robot._state == robot_state.slot || another_robot._state == robot_state.pick)
+                            another_robot.AvoidToLeavePath();
                     }
                     else if (IsCollideWith(another_robot))
                     {
                         Program.Print(_id + "" + _location + "collide with " + robot_id + _path.Peek() + "\n");
                         if (another_robot._state == robot_state.slot || another_robot._state == robot_state.pick)
-                            another_robot.AvoidToLeavePath();
+                        {
+                            if (another_robot.AvoidToLeavePath() == false)
+                                this.AvoidToLeavePath();
+                        }
                         else
                             AvoidToLeavePath();
                     }
@@ -178,7 +180,7 @@ namespace Daiwa
             ShippingRobot shipper = (ShippingRobot)Warehouse._Shippers[product._shipperID];
             _destination_point = shipper.GetShipPoint();
 
-            _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
+            _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath, true);
             _state = robot_state.ship;
         }
 
@@ -197,7 +199,7 @@ namespace Daiwa
         public void PrepareToReceive()
         {
             _destination_point = Warehouse._Receiver.GetReceivePoint();
-            _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath);
+            _path = AStarPathfinding.FindPath(_location, _destination_point, out _noPath, true);
             _state = robot_state.receive;
         }
 
@@ -205,7 +207,7 @@ namespace Daiwa
         {
             if (_state != robot_state.returning && _state != robot_state.free && _isLoading == false && _isUnloading == false)
             {
-                _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
+                _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath, true);
                 _state = robot_state.returning;
                 _destination_point = _chargingPoint;
             }
@@ -269,6 +271,7 @@ namespace Daiwa
 
         public void FinishPicking()
         {
+            Program.PrintLine(_id + "finish pick" + _isLoading);
             _isLoading = false;
             _loadedItems.Enqueue(_order._productID);
             _order._quantity--;
@@ -282,6 +285,7 @@ namespace Daiwa
 
         public void FinishSlotting()
         {
+            Program.PrintLine(_id + "finish slot" + _isUnloading);
             _isUnloading = false;
            
             _order._quantity--;

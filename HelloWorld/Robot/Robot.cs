@@ -157,7 +157,7 @@ namespace Daiwa
                 Program.PrintLine(_id + "Move to front side" + _location + FrontTile);
                 return true;
             }
-
+            Program.PrintLine(_id + "can not move");
             return false;
         }
 
@@ -259,7 +259,7 @@ namespace Daiwa
 
         public virtual void PrepareToPick(Point pickup_point, Rack rack, string product_id, int quantity)
         {
-            _path = AStarPathfinding.FindPath(_location, pickup_point, out _noPath, false);
+            _path = AStarPathfinding.FindPath(_location, pickup_point, out _noPath, true);
             _state = robot_state.pick;
 
             _order._rack = rack;

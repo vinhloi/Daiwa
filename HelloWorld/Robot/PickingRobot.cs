@@ -55,20 +55,24 @@ namespace Daiwa
                     Robot another_robot = Warehouse._AllMovingRobots[robot_id];
                     if (another_robot._path.Count == 0)// anther robot is stopping
                     {
-                        Program.Print(_id + " is obstructed by " + robot_id + " at " + _path.Peek() + "\n");
+                        Program.Print(_id + " is obstructed by " + robot_id + another_robot._state + " at " + _path.Peek() + "\n");
                         if (Warehouse._Transporters.ContainsKey(another_robot._id) && _destination_point.Equals(another_robot._destination_point))
                         {
                             TransportRobot robot = (TransportRobot)another_robot;
                             robot.LeavePathForPicker();
+                            return;
                         }
-                        else
-                            Reroute();
+                        if (another_robot._state == robot_state.slot || another_robot._state == robot_state.pick)
+                            another_robot.AvoidToLeavePath();
                     }
                     else if (IsCollideWith(another_robot))
                     {
                         Program.Print(_id + "" + _location + "collide with " + robot_id + _path.Peek() + "\n");
                         if (another_robot._state == robot_state.slot || another_robot._state == robot_state.pick)
-                            another_robot.AvoidToLeavePath();
+                        {
+                            if (another_robot.AvoidToLeavePath() == false)
+                                this.AvoidToLeavePath();
+                        }
                         else
                             AvoidToLeavePath();
                     }
@@ -99,7 +103,7 @@ namespace Daiwa
         {
             if (_state != robot_state.returning && _state != robot_state.free && _pickingTime == 0)
             {
-                _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
+                _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath, true);
                 _state = robot_state.returning;
                 _destination_point = _chargingPoint;
             }
@@ -110,7 +114,7 @@ namespace Daiwa
             if (_state != robot_state.returning && _state != robot_state.free && _pickingTime == 0)
             {
                 Program.Print("Force return " + _id + " " + _state + " " + _destination_point + "\n");
-                _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath);
+                _path = AStarPathfinding.FindPath(_location, _chargingPoint, out _noPath, true);
                 if (_noPath == true)
                     return;
                 _backUpState = _state;
@@ -136,9 +140,10 @@ namespace Daiwa
                         _actionString += " n";
                         return;
                     }
-
                     _actionString = _actionString + " p " + transporter._id + " " + _order._rack.GetXXYYDH() + " " + _order._productID;
                     transporter._isLoading = true;
+                    this._isLoading = true;
+                    Program.PrintLine(transporter._id + "begin pick" + transporter._isLoading + transporter._isUnloading);
                 }
                 _pickingTime++;
             }
@@ -148,6 +153,7 @@ namespace Daiwa
                 _order._quantity--;
                 _order._rack.RemoveItem(_order._productID);
                 transporter.FinishPicking();
+                this._isLoading = false;
                 if (_order._quantity == 0)
                 {
                     transporter.PrepareToShip();
@@ -174,9 +180,11 @@ namespace Daiwa
                         _actionString += " n";
                         return;
                     }
-
+                    
                     _actionString = _actionString + " s " + transporter._id + " " + _order._rack.GetXXYYDH() + " " + transporter._loadedItems.Peek();
                     transporter._isUnloading = true;
+                    this._isUnloading = true;
+                    Program.PrintLine(transporter._id + "begin slot" + transporter._isLoading + transporter._isUnloading);
                 }
                 _pickingTime++;
             }
@@ -186,6 +194,7 @@ namespace Daiwa
                 _order._quantity--;
                 _order._rack.AddItem(transporter._loadedItems.Dequeue());
                 transporter.FinishSlotting();
+                this._isUnloading = false;
                 if (_order._quantity == 0)
                 {
                     PrepareToReturn();
